@@ -19,19 +19,26 @@ export function createEarth(): THREE.Group {
   earthMesh.name = "earthMesh"; // So we can access it later
   earthGroup.add(earthMesh);
 
+  //clouds
   const cloudsMat = new THREE.MeshStandardMaterial({
     map: loader.load("textures/earth/04_earthcloudmap.jpg"),
     transparent: true,
     opacity: 0.8,
     blending: THREE.AdditiveBlending,
     alphaMap: loader.load("textures/earth/05_earthcloudmaptrans.jpg"),
-    // alphaTest: 0.3,
   })
-
   const cloudsMesh = new THREE.Mesh(geometry, cloudsMat);
   cloudsMesh.name = "cloudsMesh";
   cloudsMesh.scale.setScalar(1.003);
   earthGroup.add(cloudsMesh);
+
+  //night-lights
+  const lightsMat = new THREE.MeshBasicMaterial({
+    map: loader.load("textures/earth/03_earthlights1k.jpg"),
+    blending: THREE.AdditiveBlending,
+  });
+  const lightsMesh = new THREE.Mesh(geometry, lightsMat);
+  earthGroup.add(lightsMesh);
 
   return earthGroup;
 }
