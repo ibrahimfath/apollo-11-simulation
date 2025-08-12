@@ -10,7 +10,7 @@ export function createEarth(): THREE.Group {
 
   const geometry = new THREE.IcosahedronGeometry(2, detail);
   const material = new THREE.MeshPhongMaterial({
-    map: loader.load("textures/earth/8k_earth_daymap.jpg"),
+    map: loader.load("/textures/earth/8k_earth_daymap.jpg"),
     specularMap: loader.load("/textures/earth/8k_earth_specular_map.jpg"),
   });
 
@@ -20,7 +20,7 @@ export function createEarth(): THREE.Group {
 
   //clouds
   const cloudsMat = new THREE.MeshStandardMaterial({
-    map: loader.load("textures/earth/8k_earth_clouds.jpg"),
+    map: loader.load("/textures/earth/8k_earth_clouds.jpg"),
     transparent: true,
     opacity: 0.8,
     blending: THREE.AdditiveBlending,
