@@ -10,10 +10,8 @@ export function createEarth(): THREE.Group {
 
   const geometry = new THREE.IcosahedronGeometry(1, detail);
   const material = new THREE.MeshPhongMaterial({
-    map: loader.load("/textures/earth/00_earthmap1k.jpg"),
-    specularMap: loader.load("/textures/earth/02_earthspec1k.jpg"),
-    bumpMap: loader.load("textures/earth/01_earthbump1k.jpg"),
-    bumpScale: 0.04,
+    map: loader.load("public/textures/earth/8k_earth_daymap.jpg"),
+    specularMap: loader.load("/textures/earth/8k_earth_specular_map.jpg"),
   });
 
   const earthMesh = new THREE.Mesh(geometry, material);
@@ -22,24 +20,15 @@ export function createEarth(): THREE.Group {
 
   //clouds
   const cloudsMat = new THREE.MeshStandardMaterial({
-    map: loader.load("textures/earth/04_earthcloudmap.jpg"),
+    map: loader.load("textures/earth/8k_earth_clouds.jpg"),
     transparent: true,
     opacity: 0.8,
     blending: THREE.AdditiveBlending,
-    alphaMap: loader.load("textures/earth/05_earthcloudmaptrans.jpg"),
   })
   const cloudsMesh = new THREE.Mesh(geometry, cloudsMat);
   cloudsMesh.name = "cloudsMesh";
   cloudsMesh.scale.setScalar(1.003);
   earthGroup.add(cloudsMesh);
-
-  //night-lights
-  const lightsMat = new THREE.MeshBasicMaterial({
-    map: loader.load("textures/earth/03_earthlights1k.jpg"),
-    blending: THREE.AdditiveBlending,
-  });
-  const lightsMesh = new THREE.Mesh(geometry, lightsMat);
-  earthGroup.add(lightsMesh);
 
   //atmosphere
   const atmosphereMat = getatmosphereMat();
