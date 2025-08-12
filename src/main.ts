@@ -13,11 +13,14 @@ scene.add(earthGroup);
 const sunLight = createSunLight();
 scene.add(sunLight);
 
-const earthMesh = earthGroup.getObjectByName("earthMesh") as THREE.Mesh;
+const cloudsMesh = earthGroup.getObjectByName("cloudsMesh") as THREE.Mesh;
+
 
 function animate() {
   requestAnimationFrame(animate);
-  earthMesh.rotation.y += 0.002;
+  
+  earthGroup.rotation.y += 0.002;
+  cloudsMesh.rotation.y += 0.001;
   renderer.render(scene, camera);
   controls.update();
 }
