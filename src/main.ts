@@ -1,24 +1,32 @@
-import './style.css'
-import typescriptLogo from './typescript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.ts'
+import { createScene } from "./visualization/scene";
+import { createEarth } from "./visualization/earth";
+import { createControls } from "./visualization/controls";
+import { createSunLight } from "./visualization/lighting";
+import * as THREE from "three";
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`
+const { scene, camera, renderer } = createScene();
+const controls = createControls(camera, renderer);
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+const earthGroup = createEarth();
+scene.add(earthGroup);
+
+const sunLight = createSunLight();
+scene.add(sunLight);
+
+const earthMesh = earthGroup.getObjectByName("earthMesh") as THREE.Mesh;
+
+function animate() {
+  requestAnimationFrame(animate);
+  earthMesh.rotation.y += 0.002;
+  renderer.render(scene, camera);
+  controls.update();
+}
+
+animate();
+
+function handleWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+window.addEventListener("resize", handleWindowResize, false);
