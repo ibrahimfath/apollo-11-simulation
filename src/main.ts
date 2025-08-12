@@ -3,6 +3,8 @@ import { createScene } from "./visualization/scene";
 import { createEarth } from "./visualization/earth";
 import { createControls } from "./visualization/controls";
 import { createSunLight } from "./visualization/lighting";
+import { createSkybox } from "./visualization/skybox";
+
 
 const { scene, camera, renderer } = createScene();
 const controls = createControls(camera, renderer);
@@ -15,7 +17,9 @@ scene.add(sunLight);
 
 const cloudsMesh = earthGroup.getObjectByName("cloudsMesh") as THREE.Mesh;
 
-
+// Load and set skybox
+const skyboxTexture = createSkybox("/textures/skybox/");
+scene.background = skyboxTexture;
 
 function animate() {
   requestAnimationFrame(animate);
