@@ -8,9 +8,9 @@ export function createEarth(): THREE.Group {
   const detail = 12;
   const loader = new THREE.TextureLoader();
 
-  const geometry = new THREE.IcosahedronGeometry(1, detail);
+  const geometry = new THREE.IcosahedronGeometry(2, detail);
   const material = new THREE.MeshPhongMaterial({
-    map: loader.load("public/textures/earth/8k_earth_daymap.jpg"),
+    map: loader.load("textures/earth/8k_earth_daymap.jpg"),
     specularMap: loader.load("/textures/earth/8k_earth_specular_map.jpg"),
   });
 
