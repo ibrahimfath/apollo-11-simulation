@@ -6,13 +6,27 @@ export function createScene() {
 
   const scene = new THREE.Scene();
 
-  const camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 1000);
-  camera.position.z = 5;
+  const camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 2000);
+  camera.position.set(0, 0, 5);
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  const renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    powerPreference: "high-performance", // hint to GPU
+  });
+
   renderer.setSize(w, h);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // High-DPI fix
+
+  // Enable physically-based rendering
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
+  renderer.toneMappingExposure = 1.0;
+
+  // Correct output color space
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  // Shadows (optional, but useful for spacecraft/Moon shading)
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   document.body.appendChild(renderer.domElement);
 

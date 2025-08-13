@@ -2,7 +2,6 @@ import * as THREE from "three";
 
 export function createMoon(): THREE.Group {
   const moonGroup = new THREE.Group();
-  moonGroup.rotation.z = -23.4 * Math.PI / 180;
 
   const detail = 12;
   const loader = new THREE.TextureLoader();

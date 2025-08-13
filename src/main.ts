@@ -5,16 +5,28 @@ import { createControls } from "./visualization/controls";
 import { createSunLight } from "./visualization/lighting";
 import { createSkybox } from "./visualization/skybox";
 import { createMoon } from "./visualization/moon";
+import { createBloomPipeline} from "./visualization/bloom";
+import { createSun } from "./visualization/sun";
 
 
 const { scene, camera, renderer } = createScene();
 const controls = createControls(camera, renderer);
+
+const bloomRenderer = createBloomPipeline(renderer, scene, camera, {
+  strength: 2.0, // glow intensity
+  radius: 0.5,   // glow spread
+  threshold: 0.0 // brightness threshold
+});
 
 const earthGroup = createEarth();
 scene.add(earthGroup);
 
 const moonGroup = createMoon();
 scene.add(moonGroup);
+
+// 6) Add Sun mesh (bloom)
+const sun = createSun();
+scene.add(sun);
 
 const sunLight = createSunLight();
 scene.add(sunLight);
@@ -32,7 +44,9 @@ function animate() {
   cloudsMesh.rotation.y += 0.001;
   moonGroup.rotation.y += 0.0005;
 
-  renderer.render(scene, camera);
+  // Render with bloom
+  bloomRenderer.render();
+
   controls.update();
 }
 
