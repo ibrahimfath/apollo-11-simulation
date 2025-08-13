@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { getatmosphereMat } from "./atmosphere";
+import { getAtmosphereMat } from "./atmosphere";
 import { markForBloom } from "./bloom";
 
 export function createEarth(): THREE.Group {
@@ -32,7 +32,7 @@ export function createEarth(): THREE.Group {
   earthGroup.add(cloudsMesh);
 
   //atmosphere
-  const atmosphereMat = getatmosphereMat();
+  const atmosphereMat = getAtmosphereMat();
   const glowMesh = new THREE.Mesh(geometry, atmosphereMat);
   markForBloom(glowMesh);
   glowMesh.scale.setScalar(1.01);
