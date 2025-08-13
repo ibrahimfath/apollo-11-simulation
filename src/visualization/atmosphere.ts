@@ -14,8 +14,8 @@ export function getatmosphereMat({
     color1: { value: new THREE.Color(rimHex) },
     color2: { value: new THREE.Color(facingHex) },
     atmosphereBias: { value: 0.1 },
-    atmosphereScale: { value: 1.0 },
-    atmospherePower: { value: 4.0 },
+    atmosphereScale: { value: 0.27 },
+    atmospherePower: { value: 5.0 },
   };
 
   const vs = `
