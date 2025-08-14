@@ -7,7 +7,7 @@ export function createScene() {
   const scene = new THREE.Scene();
 
   const camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 2000);
-  camera.position.set(0, 0, 5);
+  camera.position.set(0, 0, 20);
 
   const renderer = new THREE.WebGLRenderer({
     antialias: true,
