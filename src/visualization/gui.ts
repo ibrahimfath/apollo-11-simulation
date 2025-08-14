@@ -4,8 +4,9 @@ import GUI from "lil-gui";
 import { Earth } from "./Earth";
 import { Moon } from "./Moon";
 import { TimeController } from "../physics/TimeController";
+import type { Sun } from "./Sun";
 
-export function setupGUI(earth: Earth, moon: Moon, time: TimeController) {
+export function setupGUI(earth: Earth, moon: Moon, sun: Sun, time: TimeController) {
   const gui = new GUI();
   
   //
@@ -322,6 +323,10 @@ export function setupGUI(earth: Earth, moon: Moon, time: TimeController) {
     "reset"
   ).name("Reset Moon");
 
-
+  //Sun
+  const sunFolder = gui.addFolder("Sun");
+  sunFolder.addColor(sun.light, "color").name("Light Color");
+  sunFolder.add(sun.light, "intensity", 0, 10).name("Light Intensity");
+  
   gui.close(); // start closed
 }

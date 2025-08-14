@@ -37,7 +37,7 @@ scene.background = skyboxTexture;
 const time = new TimeController(3000);
 let last = performance.now();
 
-setupGUI(earth, moon, time); 
+setupGUI(earth, moon, sun,time); 
 
 function animate() {
   requestAnimationFrame(animate);
