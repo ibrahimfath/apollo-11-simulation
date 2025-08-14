@@ -2,29 +2,40 @@ import * as THREE from "three";
 import vertexShader from "./shaders/atmosphere.vert.glsl";
 import fragmentShader from "./shaders/atmosphere.frag.glsl";
 
-interface AtmosphereParams {
-  rimHex?: number;     // Rim scattering color
-  facingHex?: number;  // Center-facing color
-}
 
-export function getAtmosphereMat({
-  rimHex = 0x0088ff,
-  facingHex = 0x000000
-}: AtmosphereParams = {}): THREE.ShaderMaterial {
+export class Atmosphere {
+  public material?: THREE.ShaderMaterial;
+  public mesh?: THREE.Mesh;
+  public rimHex?: number;     // Rim scattering color
+  public facingHex?: number;  // Center-facing color
+  public bias?: number;
+  public scale?: number;
+  public power?: number;
+  public baseRadius?: number
 
-  const uniforms = {
-    color1: { value: new THREE.Color(rimHex) },
-    color2: { value: new THREE.Color(facingHex) },
-    atmosphereBias: { value: 0.1 },
-    atmosphereScale: { value: 0.27 },
-    atmospherePower: { value: 5.0 },
-  };
+  constructor() {
+    this.rimHex = 0x0088ff;
+    this.facingHex = 0x000000;
+    this.bias = 0.1;
+    this.scale = 0.27;
+    this.power = 5.0;
 
-  return new THREE.ShaderMaterial({
-    uniforms,
-    vertexShader,
-    fragmentShader,
-    transparent: true,
-    blending: THREE.AdditiveBlending
-  });
+    const uniforms = {
+      color1: { value: new THREE.Color(this.rimHex) },
+      color2: { value: new THREE.Color(this.facingHex) },
+      atmosphereBias: { value: this.bias },
+      atmosphereScale: { value: this.scale },
+      atmospherePower: { value: this.power},
+    };
+
+    this.material = new THREE.ShaderMaterial({
+      uniforms,
+      vertexShader,
+      fragmentShader,
+      transparent: true,
+      blending: THREE.AdditiveBlending
+    });
+    
+
+  }
 }
