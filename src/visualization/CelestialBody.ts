@@ -1,0 +1,97 @@
+import * as THREE from "three";
+
+export interface CelestialBodyProps {
+  name?: string;
+  scalePerUnit?: number;              // meters per Three.js unit
+  mass?: number;               // kg
+  radius?: number;             // m
+  baseRadius?: number;         // m
+  rotationPeriod?: number;     // s
+  totalRotationPeriod: number; // s
+  orbitPeriod?: number;        // s
+  axialTilt?: number;          // degrees
+  textureMap?: string;         // Diffuse map
+  specularMap?: string;        // Specular map
+  bumpMap?: string;     
+  cloudsMap?: string;          // Optional clouds texture
+}
+
+export class CelestialBody {
+  public group: THREE.Group;
+  public mesh: THREE.Mesh;
+  public clouds?: THREE.Mesh;
+  public atmosphereMesh?: THREE.Mesh;
+
+  // Physical properties
+  public name: string;
+  public geometry: THREE.IcosahedronGeometry;
+  public mass: number;
+  public radius: number;
+  public baseRadius: number;
+  public rotationPeriod: number;
+  public totalRotationPeriod: number;
+  public orbitPeriod: number;
+  public axialTilt: number;
+  public scalePerUnit: number;
+
+  constructor(props: CelestialBodyProps) {
+    this.name = props.name ?? "Unknown";
+    this.mass = props.mass ?? 0;
+    this.radius = props.radius ?? 1;
+    this.baseRadius = props.baseRadius ?? 1;
+    this.rotationPeriod = props.rotationPeriod ?? 1;
+    this.totalRotationPeriod = props.totalRotationPeriod ?? 1;
+    this.orbitPeriod = props.orbitPeriod ?? 1;
+    this.axialTilt = props.axialTilt ?? 0;
+    this.scalePerUnit = props.scalePerUnit ?? 1_000_000; // default: 1 unit = 1000 km
+
+    this.group = new THREE.Group();
+    this.group.rotation.z = -this.axialTilt * Math.PI / 180;
+
+    const loader = new THREE.TextureLoader();
+    const detail = 12;
+    const scaledRadius = this.radius / this.scalePerUnit;
+
+    // Main planet mesh
+    this.geometry = new THREE.IcosahedronGeometry(scaledRadius, detail);
+    const material = new THREE.MeshPhongMaterial({
+      map: props.textureMap ? loader.load(props.textureMap) : undefined,
+      specularMap: props.specularMap ? loader.load(props.specularMap) : undefined,
+      bumpMap: props.bumpMap ? loader.load(props.bumpMap) : undefined,
+      bumpScale: props.bumpMap ? scaledRadius * 0.5 : 0, // relative bump scale
+    });
+    this.mesh = new THREE.Mesh(this.geometry, material);
+    this.mesh.name = `${this.name}_mesh`;
+    this.group.add(this.mesh);
+
+    // Clouds layer (optional)
+    if (props.cloudsMap) {
+      const cloudsMat = new THREE.MeshStandardMaterial({
+        map: loader.load(props.cloudsMap),
+        transparent: true,
+        opacity: 0.8,
+        blending: THREE.AdditiveBlending,
+      });
+      this.clouds = new THREE.Mesh(this.geometry, cloudsMat);
+      this.clouds.name = `${this.name}_clouds`;
+      this.clouds.scale.setScalar(1.003);
+      this.group.add(this.clouds);
+    }
+  }
+
+  /** Update rotation based on deltaTime in seconds */
+  update(deltaTime: number) {
+    const rotationSpeed = (2 * Math.PI) / this.totalRotationPeriod; // rad/s
+    this.mesh.rotation.y += rotationSpeed * deltaTime;
+
+    if (this.clouds) {
+      this.clouds.rotation.y += rotationSpeed * 0.5 * deltaTime; // slower clouds
+    }
+  }
+
+  setRadius(newRadius: number) {
+    const scaleFactor = newRadius / this.baseRadius;
+    this.radius = newRadius;
+    this.group.scale.setScalar(scaleFactor);
+  }
+}
