@@ -1,11 +1,10 @@
 import { createScene } from "./visualization/scene";
 import { Earth } from "./visualization/Earth";
 import { createControls } from "./visualization/controls";
-import { createSunLight } from "./visualization/lighting";
 import { createSkybox } from "./visualization/skybox";
 import { Moon } from "./visualization/Moon";
 import { createBloomPipeline} from "./visualization/bloom";
-import { createSun } from "./visualization/sun";
+import { Sun } from "./visualization/Sun";
 import { TimeController } from "./physics/TimeController";
 import { setupGUI } from "./visualization/gui";
 
@@ -27,11 +26,9 @@ const moon = new Moon(earth);
 scene.add(moon.group);
 
 // 6) Add Sun mesh (bloom)
-const sun = createSun();
-scene.add(sun);
-
-const sunLight = createSunLight();
-scene.add(sunLight);
+const sun = new Sun();
+scene.add(sun.mesh);
+scene.add(sun.light);
 
 // Load and set skybox
 const skyboxTexture = createSkybox("/textures/skybox/");
