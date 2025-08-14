@@ -1,16 +1,18 @@
-import * as THREE from "three";
 import { createScene } from "./visualization/scene";
-import { createEarth } from "./visualization/earth";
+import { Earth } from "./visualization/Earth";
 import { createControls } from "./visualization/controls";
 import { createSunLight } from "./visualization/lighting";
 import { createSkybox } from "./visualization/skybox";
-import { createMoon } from "./visualization/moon";
+import { Moon } from "./visualization/Moon";
 import { createBloomPipeline} from "./visualization/bloom";
 import { createSun } from "./visualization/sun";
+import { TimeController } from "./physics/TimeController";
+import { setupGUI } from "./visualization/gui";
 
 
 const { scene, camera, renderer } = createScene();
 const controls = createControls(camera, renderer);
+
 
 const bloomRenderer = createBloomPipeline(renderer, scene, camera, {
   strength: 2.0, // glow intensity
@@ -18,11 +20,11 @@ const bloomRenderer = createBloomPipeline(renderer, scene, camera, {
   threshold: 0.0 // brightness threshold
 });
 
-const earthGroup = createEarth();
-scene.add(earthGroup);
+const earth = new Earth();
+scene.add(earth.group);
 
-const moonGroup = createMoon();
-scene.add(moonGroup);
+const moon = new Moon(earth);
+scene.add(moon.group);
 
 // 6) Add Sun mesh (bloom)
 const sun = createSun();
@@ -31,18 +33,26 @@ scene.add(sun);
 const sunLight = createSunLight();
 scene.add(sunLight);
 
-const cloudsMesh = earthGroup.getObjectByName("cloudsMesh") as THREE.Mesh;
-
 // Load and set skybox
 const skyboxTexture = createSkybox("/textures/skybox/");
 scene.background = skyboxTexture;
 
+const time = new TimeController(3000);
+let last = performance.now();
+
+setupGUI(earth, moon, time); 
+
 function animate() {
   requestAnimationFrame(animate);
-  
-  earthGroup.rotation.y += 0.002;
-  cloudsMesh.rotation.y += 0.001;
-  moonGroup.rotation.y += 0.0005;
+
+  const now = performance.now();
+  let dt = (now - last) / 1000;
+  last = now;
+
+  dt = time.apply(dt);
+
+  earth.update(dt);
+  moon.update(dt);
 
   // Render with bloom
   bloomRenderer.render();
