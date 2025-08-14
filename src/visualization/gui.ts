@@ -198,7 +198,130 @@ export function setupGUI(earth: Earth, moon: Moon, time: TimeController) {
     "reset"
   ).name("Reset Atmosphere");
 
-  // 
+  //
+  // --- MOON FOLDER ---
+  //
+  const moonFolder = gui.addFolder("Moon");
+
+  // Default moon values (used for reset)
+  const defaultMoon = {
+    mass: 7.34767309e22,
+    radius: 1_737_400,
+    rotationPeriod: 24, // hours (gui uses hours)
+    totalRotationPeriod: 27.32 * 24 * 3600,
+    axialTilt: 6.68,
+    orbitRadius: 384_400_000,
+    orbitPeriod: 27.32 * 24 * 3600,
+    inclination: 5.145,
+    bumpScale:
+      moon.mesh.material instanceof THREE.MeshPhongMaterial
+        ? moon.mesh.material.bumpScale
+        : 0,
+  };
+
+  // Moon controllers
+  const moonMassCtrl = moonFolder
+    .add(moon, "mass", 7.34767309e22, 7.34767309e25)
+    .name("Mass");
+
+  const moonRotCtrl = moonFolder
+    .add(moon, "rotationPeriod", 1, 100)
+    .name("Rotation Period")
+    .onChange((value: number) => {
+      moon.rotationPeriod = value;
+      moon.totalRotationPeriod = value * 3600;
+    });
+
+  const moonRadiusCtrl = moonFolder
+    .add(moon, "radius", 1_000_000, 31_855_000)
+    .name("Radius")
+    .onChange((value: number) => {
+      moon.setRadius(value);
+    });
+
+  const moonTiltCtrl = moonFolder
+    .add(moon, "axialTilt", -45, 45)
+    .name("Axial Tilt (°)")
+    .onChange(() => {
+      moon.group.rotation.z = -moon.axialTilt * Math.PI / 180;
+    });
+
+  // bumpScale controller (if available)
+  let moonBumpCtrl: any = undefined;
+  if (moon.mesh.material instanceof THREE.MeshPhongMaterial && moon.mesh.material.bumpMap) {
+    moonBumpCtrl = moonFolder.add(moon.mesh.material, "bumpScale", 0, 5).name("Bump Scale");
+  }
+
+  // Orbit parameters (Orbit class has internal names; GUI uses 'as any' to avoid TS privacy)
+  let moonOrbitRadiusCtrl: any;
+  let moonOrbitPeriodCtrl: any;
+  let moonInclinationCtrl: any;
+
+  if (moon.orbit) {
+    // Show orbit radius in meters in GUI, but Orbit stores scene units internally.
+    // The onChange handler converts meters -> scene units.
+    moonOrbitRadiusCtrl = moonFolder
+      .add({ orbitRadius_m: defaultMoon.orbitRadius }, "orbitRadius_m", 100_000_000, 500_000_000)
+      .name("Orbit Radius (m)")
+      .onChange((value: number) => {
+        // Convert meters -> scene units and assign to private field
+        moon.orbit!["orbitRadius"] = value / (moon.scalePerUnit ?? 1_000_000);
+      });
+
+    // Orbit period controller (seconds)
+    moonOrbitPeriodCtrl = moonFolder
+      .add(moon.orbit as any, "orbitPeriod", 10 * 24 * 3600, 40 * 24 * 3600)
+      .name("Orbit Period (s)");
+
+    // Inclination in degrees toggle, convert to radians for internal storage
+    moonInclinationCtrl = moonFolder
+      .add({ inclination_deg: defaultMoon.inclination }, "inclination_deg", -10, 10)
+      .name("Inclination (°)")
+      .onChange((value: number) => {
+        moon.orbit!["inclination"] = value * Math.PI / 180;
+      });
+  }
+
+  // Reset Moon (synchronizes GUI controllers)
+  moonFolder.add(
+    {
+      reset: () => {
+        // Physical resets
+        moon.mass = defaultMoon.mass;
+        moon.setRadius(defaultMoon.radius);
+        moon.rotationPeriod = defaultMoon.rotationPeriod;
+        moon.totalRotationPeriod = defaultMoon.totalRotationPeriod;
+        moon.axialTilt = defaultMoon.axialTilt;
+        moon.group.rotation.z = -moon.axialTilt * Math.PI / 180;
+
+        // Reset bump scale (if present)
+        if (moon.mesh.material instanceof THREE.MeshPhongMaterial) {
+          moon.mesh.material.bumpScale = defaultMoon.bumpScale;
+        }
+
+        // Reset orbit
+        if (moon.orbit) {
+          moon.orbit!["orbitRadius"] = defaultMoon.orbitRadius / (moon.scalePerUnit ?? 1_000_000);
+          moon.orbit!["orbitPeriod"] = defaultMoon.orbitPeriod;
+          moon.orbit!["inclination"] = defaultMoon.inclination * Math.PI / 180;
+        }
+
+        // Update GUI elements to reflect defaults
+        moonMassCtrl.setValue(defaultMoon.mass);
+        moonRadiusCtrl.setValue(defaultMoon.radius);
+        moonRotCtrl.setValue(defaultMoon.rotationPeriod);
+        moonTiltCtrl.setValue(defaultMoon.axialTilt);
+
+        if (moonBumpCtrl) moonBumpCtrl.setValue(defaultMoon.bumpScale);
+
+        if (moonOrbitRadiusCtrl) moonOrbitRadiusCtrl.setValue(defaultMoon.orbitRadius);
+        if (moonOrbitPeriodCtrl) moonOrbitPeriodCtrl.setValue(defaultMoon.orbitPeriod);
+        if (moonInclinationCtrl) moonInclinationCtrl.setValue(defaultMoon.inclination);
+      },
+    },
+    "reset"
+  ).name("Reset Moon");
+
 
   gui.close(); // start closed
 }
