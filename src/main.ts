@@ -6,7 +6,7 @@ import { createControls } from "./visualization/controls";
 import { createSkybox } from "./visualization/skybox";
 import { createBloomPipeline} from "./visualization/bloom";
 import { TimeController } from "./physics/TimeController";
-import { setupGUI } from "./visualization/gui";
+import { setupGUI } from "./ui/guiManager";
 
 
 const { scene, camera, renderer } = createScene();
