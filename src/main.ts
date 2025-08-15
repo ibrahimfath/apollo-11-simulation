@@ -1,10 +1,10 @@
+import { Earth } from "./objects/Earth";
+import { Sun } from "./objects/Sun";
+import { Moon } from "./objects/Moon";
 import { createScene } from "./visualization/scene";
-import { Earth } from "./visualization/Earth";
 import { createControls } from "./visualization/controls";
 import { createSkybox } from "./visualization/skybox";
-import { Moon } from "./visualization/Moon";
 import { createBloomPipeline} from "./visualization/bloom";
-import { Sun } from "./visualization/Sun";
 import { TimeController } from "./physics/TimeController";
 import { setupGUI } from "./visualization/gui";
 

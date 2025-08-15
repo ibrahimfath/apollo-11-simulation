@@ -1,10 +1,9 @@
-// src/visualization/gui.ts
 import * as THREE from "three";
 import GUI from "lil-gui";
-import { Earth } from "./Earth";
-import { Moon } from "./Moon";
+import { Earth } from "../objects/Earth";
+import { Moon } from "../objects/Moon";
+import { Sun } from "../objects/Sun";
 import { TimeController } from "../physics/TimeController";
-import type { Sun } from "./Sun";
 
 export function setupGUI(earth: Earth, moon: Moon, sun: Sun, time: TimeController) {
   const gui = new GUI();

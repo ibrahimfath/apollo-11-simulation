@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import { Atmosphere } from "./atmosphere";
+import { Atmosphere } from "./Atmosphere";
 import { CelestialBody } from "./CelestialBody";
-import { markForBloom } from "./bloom";
+import { markForBloom } from "../visualization/bloom";
 
 export class Earth extends CelestialBody {
 

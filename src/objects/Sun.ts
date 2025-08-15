@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { markForBloom } from "./bloom";
+import { markForBloom } from "../visualization/bloom";
 
 
 export class Sun {

@@ -1,4 +1,4 @@
-import { CelestialBody } from "../visualization/CelestialBody";
+import { CelestialBody } from "../objects/CelestialBody";
 
 export interface OrbitParams {
   centralBody: CelestialBody; // The body being orbited (e.g., Earth)

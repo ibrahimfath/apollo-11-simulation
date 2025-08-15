@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import vertexShader from "./shaders/atmosphere.vert.glsl";
-import fragmentShader from "./shaders/atmosphere.frag.glsl";
+import vertexShader from "../visualization/shaders/atmosphere.vert.glsl";
+import fragmentShader from "../visualization/shaders/atmosphere.frag.glsl";
 
 
 export class Atmosphere {
