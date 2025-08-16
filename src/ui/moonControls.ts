@@ -1,8 +1,9 @@
 import { GUI } from "lil-gui";
 import * as THREE from "three";
 import { Moon } from "../objects/Moon";
+import type { CelestialBody } from "../objects/CelestialBody";
 
-export function createMoonControls(gui: GUI, moon: Moon) {
+export function createMoonControls(gui: GUI, moon: Moon, earth: CelestialBody) {
   const folder = gui.addFolder("Moon");
 
   const defaults = {
@@ -37,10 +38,29 @@ export function createMoonControls(gui: GUI, moon: Moon) {
   if (moon.mesh.material instanceof THREE.MeshPhongMaterial && moon.mesh.material.bumpMap) {
     bumpCtrl = folder.add(moon.mesh.material, "bumpScale", 0, 5).name("Bump Scale");
   }
+  const physicsState = {
+    pos: "(0,0,0)",
+    vel: "(0,0,0)",
+    acc: "(0,0,0)",
+    distanceToEarth: "0 m"
+  };
 
-  let orbitRadiusCtrl: any;
-  let orbitPeriodCtrl: any;
-  let inclinationCtrl: any;
+  folder.add(physicsState, "pos").name("Position (m)");
+  folder.add(physicsState, "vel").name("Velocity (m/s)");
+  folder.add(physicsState, "acc").name("Accel (m/s²)");
+  folder.add(physicsState, "distanceToEarth").name("Earth Distance (m)");
+
+  // Expose update hook so you can call it each frame
+  function updatePhysicsUI() {
+    physicsState.pos = `(${moon.r_m.x.toFixed(2)}, ${moon.r_m.y.toFixed(2)}, ${moon.r_m.z.toFixed(2)})`;
+    physicsState.vel = `(${moon.v_mps.x.toFixed(2)}, ${moon.v_mps.y.toFixed(2)}, ${moon.v_mps.z.toFixed(2)})`;
+    physicsState.acc = `(${moon.a_mps2.x.toFixed(4)}, ${moon.a_mps2.y.toFixed(4)}, ${moon.a_mps2.z.toFixed(4)})`;
+
+    const dist = moon.r_m.clone().sub(earth.r_m).length();
+    physicsState.distanceToEarth = `${dist.toExponential(3)} m`;
+    // Refresh GUI manually
+    folder.controllers.forEach(ctrl => ctrl.updateDisplay());
+  }
 
   folder.add({ reset: () => {
       moon.mass = defaults.mass;
@@ -60,13 +80,11 @@ export function createMoonControls(gui: GUI, moon: Moon) {
       tiltCtrl.setValue(defaults.axialTilt);
 
       if (bumpCtrl) bumpCtrl.setValue(defaults.bumpScale);
-      if (orbitRadiusCtrl) orbitRadiusCtrl.setValue(defaults.orbitRadius);
-      if (orbitPeriodCtrl) orbitPeriodCtrl.setValue(defaults.orbitPeriod);
-      if (inclinationCtrl) inclinationCtrl.setValue(defaults.inclination);
     }
   }, "reset").name("Reset Moon");
   return {
     folder,
+    updatePhysicsUI,
     reset: () => {
         const ctrl = folder.controllers.find(c => c.property === "reset");
         (ctrl?.object as { reset: () => void })?.reset();

@@ -17,7 +17,7 @@ export function setupGUI(earth: Earth, moon: Moon, sun: Sun, time: TimeControlle
 
   const timeUI = createTimeControls(gui, time);
   const earthUI = createEarthControls(gui, earth);
-  const moonUI = createMoonControls(gui, moon);
+  const moonUI = createMoonControls(gui, moon, earth);
   const sunUI = createSunControls(gui, sun);
 
   gui.add({ resetAll: () => {
@@ -29,4 +29,6 @@ export function setupGUI(earth: Earth, moon: Moon, sun: Sun, time: TimeControlle
   }, "resetAll").name("Reset All");
 
   gui.close();
+
+  return { gui, timeUI, earthUI, moonUI, sunUI };
 }

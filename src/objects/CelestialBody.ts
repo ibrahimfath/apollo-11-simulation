@@ -34,6 +34,11 @@ export class CelestialBody {
   public axialTilt: number;
   public scalePerUnit: number;
 
+  // Physics state (SI)
+  public r_m: THREE.Vector3;    // position in meters (world)
+  public v_mps: THREE.Vector3;  // velocity in m/s (world)
+  public a_mps2: THREE.Vector3; // acceleration in m/s^2
+
   constructor(props: CelestialBodyProps) {
     this.name = props.name ?? "Unknown";
     this.mass = props.mass ?? 0;
@@ -77,6 +82,18 @@ export class CelestialBody {
       this.clouds.scale.setScalar(1.003);
       this.group.add(this.clouds);
     }
+
+    // initialize physics state at visual position (converted)
+    const worldPos = new THREE.Vector3();
+    this.group.getWorldPosition(worldPos); // scene units
+    const meters = worldPos.multiplyScalar(this.scalePerUnit); // meters
+    this.r_m = meters.clone();
+
+    // default zero velocity
+    this.v_mps = new THREE.Vector3(0, 0, 0);
+    // default zero acceleration
+    this.a_mps2 = new THREE.Vector3(0, 0, 0);
+    
   }
 
   /** Update rotation based on deltaTime in seconds */
@@ -93,5 +110,18 @@ export class CelestialBody {
     const scaleFactor = newRadius / this.baseRadius;
     this.radius = newRadius;
     this.group.scale.setScalar(scaleFactor);
+  }
+
+  /** set initial physical state (meters, m/s) */
+  public setInitialState(positionMeters: THREE.Vector3, velocityMps: THREE.Vector3) {
+    this.r_m.copy(positionMeters);
+    this.v_mps.copy(velocityMps);
+    this.syncVisualFromPhysics();
+  }
+
+  /** update Three.js group position from r_m (meters -> scene units) */
+  public syncVisualFromPhysics() {
+    const invScale = 1 / this.scalePerUnit;
+    this.group.position.set(this.r_m.x * invScale, this.r_m.y * invScale, this.r_m.z * invScale);
   }
 }
