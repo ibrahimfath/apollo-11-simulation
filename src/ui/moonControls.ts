@@ -19,7 +19,7 @@ export function createMoonControls(gui: GUI, moon: Moon, earth: CelestialBody) {
       ? moon.mesh.material.bumpScale : 0,
   };
 
-  const massCtrl = folder.add(moon, "mass", 7.34767309e22, 7.34767309e25).name("Mass");
+  const massCtrl = folder.add(moon, "mass", 1e10, 1e25).name("Mass");
   const rotCtrl = folder.add(moon, "rotationPeriod", 1, 100).name("Rotation Period")
     .onChange((v: number) => {
       moon.rotationPeriod = v;
@@ -42,13 +42,13 @@ export function createMoonControls(gui: GUI, moon: Moon, earth: CelestialBody) {
     pos: "(0,0,0)",
     vel: "(0,0,0)",
     acc: "(0,0,0)",
-    distanceToEarth: "0 m"
+    // distanceToEarth: "0 m"
   };
 
   folder.add(physicsState, "pos").name("Position (m)");
   folder.add(physicsState, "vel").name("Velocity (m/s)");
   folder.add(physicsState, "acc").name("Accel (m/s²)");
-  folder.add(physicsState, "distanceToEarth").name("Earth Distance (m)");
+  // folder.add(physicsState, "distanceToEarth").name("Earth Distance (m)");
 
   // Expose update hook so you can call it each frame
   function updatePhysicsUI() {
@@ -56,8 +56,8 @@ export function createMoonControls(gui: GUI, moon: Moon, earth: CelestialBody) {
     physicsState.vel = `(${moon.v_mps.x.toFixed(2)}, ${moon.v_mps.y.toFixed(2)}, ${moon.v_mps.z.toFixed(2)})`;
     physicsState.acc = `(${moon.a_mps2.x.toFixed(4)}, ${moon.a_mps2.y.toFixed(4)}, ${moon.a_mps2.z.toFixed(4)})`;
 
-    const dist = moon.r_m.clone().sub(earth.r_m).length();
-    physicsState.distanceToEarth = `${dist.toExponential(3)} m`;
+    // const dist = moon.r_m.clone().sub(earth.r_m).length();
+    // physicsState.distanceToEarth = `${dist.toExponential(3)} m`;
     // Refresh GUI manually
     folder.controllers.forEach(ctrl => ctrl.updateDisplay());
   }

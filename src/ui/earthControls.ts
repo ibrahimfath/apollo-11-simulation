@@ -15,7 +15,7 @@ export function createEarthControls(gui: GUI, earth: Earth) {
     wireframe: (earth.mesh.material as THREE.MeshPhongMaterial).wireframe ?? false,
   };
 
-  const massCtrl = folder.add(earth, "mass", 5.972e24, 5.972e+26).name("Mass");
+  const massCtrl = folder.add(earth, "mass", 1e10, 1e25).name("Mass");
   const radiusCtrl = folder.add(earth, "radius", 1_000_000, 31_855_000)
     .name("Radius")
     .onChange((v: number) => earth.setRadius(v));

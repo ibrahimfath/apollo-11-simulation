@@ -7,8 +7,10 @@ import { createTimeControls } from "./timeControls";
 import { createEarthControls } from "./earthControls";
 import { createMoonControls } from "./moonControls";
 import { createSunControls } from "./sunControls";
+import { createSystemControls } from "./systemControls";
+import type { Barycenter } from "../physics/Barycenter";
 
-export function setupGUI(earth: Earth, moon: Moon, sun: Sun, time: TimeController) {
+export function setupGUI(earth: Earth, moon: Moon, sun: Sun, time: TimeController, bary: Barycenter) {
   const gui = new GUI({
     width: 300,
     title: "Simulation Controls",
@@ -16,12 +18,14 @@ export function setupGUI(earth: Earth, moon: Moon, sun: Sun, time: TimeControlle
   });
 
   const timeUI = createTimeControls(gui, time);
+  const systemUI = createSystemControls(gui, earth, moon, bary);
   const earthUI = createEarthControls(gui, earth);
   const moonUI = createMoonControls(gui, moon, earth);
   const sunUI = createSunControls(gui, sun);
 
   gui.add({ resetAll: () => {
       timeUI.reset();
+      systemUI.reset();
       earthUI.reset();
       moonUI.reset();
       sunUI.reset();
@@ -30,5 +34,5 @@ export function setupGUI(earth: Earth, moon: Moon, sun: Sun, time: TimeControlle
 
   gui.close();
 
-  return { gui, timeUI, earthUI, moonUI, sunUI };
+  return { gui, timeUI, systemUI,  earthUI, moonUI, sunUI };
 }

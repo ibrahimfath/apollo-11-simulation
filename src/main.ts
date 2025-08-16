@@ -10,6 +10,7 @@ import { TimeController } from "./physics/TimeController";
 import { setupGUI } from "./ui/guiManager";
 import { GravityEngine } from "./physics/GravityEngine";
 import { G } from "./physics/constants";
+import { Barycenter } from "./physics/Barycenter";
 
 
 const { scene, camera, renderer } = createScene();
@@ -62,7 +63,11 @@ scene.background = skyboxTexture;
 const time = new TimeController(1);
 let last = performance.now();
 
-const { gui, timeUI, earthUI, moonUI, sunUI } = setupGUI(earth, moon, sun, time);
+// after you create earth, moon …
+const bary = new Barycenter(earth, moon);
+scene.add(bary.marker);
+
+const { gui, timeUI, systemUI, earthUI, moonUI, sunUI } = setupGUI(earth, moon, sun, time, bary);
 
 function animate() {
   requestAnimationFrame(animate);
@@ -80,6 +85,9 @@ function animate() {
   moon.update(dt);
 
   moonUI.updatePhysicsUI();
+
+  bary.update();
+  systemUI.update();
   
   // Render with bloom
   bloomRenderer.render();
