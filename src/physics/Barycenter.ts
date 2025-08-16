@@ -1,6 +1,6 @@
-// src/physics/Barycenter.ts
 import * as THREE from "three";
 import { CelestialBody } from "../objects/CelestialBody";
+
 
 export class Barycenter {
   public bodies: [CelestialBody, CelestialBody];

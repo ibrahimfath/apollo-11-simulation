@@ -67,7 +67,7 @@ let last = performance.now();
 const bary = new Barycenter(earth, moon);
 scene.add(bary.marker);
 
-const { gui, timeUI, systemUI, earthUI, moonUI, sunUI } = setupGUI(earth, moon, sun, time, bary);
+const { gui, timeUI, earthMoonUI, earthUI, moonUI, sunUI } = setupGUI(earth, moon, sun, time, bary);
 
 function animate() {
   requestAnimationFrame(animate);
@@ -87,7 +87,7 @@ function animate() {
   moonUI.updatePhysicsUI();
 
   bary.update();
-  systemUI.update();
+  earthMoonUI.update();
   
   // Render with bloom
   bloomRenderer.render();

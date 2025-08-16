@@ -4,8 +4,8 @@ import { Earth } from "../objects/Earth";
 import { Moon } from "../objects/Moon";
 import { Barycenter } from "../physics/Barycenter";
 
-export function createSystemControls(gui: GUI, earth: Earth, moon: Moon, bary: Barycenter) {
-  const folder = gui.addFolder("System");
+export function createEarthMoonControls(gui: GUI, earth: Earth, moon: Moon, bary: Barycenter) {
+  const folder = gui.addFolder("Earth-Moon");
 
   const state = {
     showBarycenter: true,
