@@ -41,21 +41,6 @@ export function createMoonControls(gui: GUI, moon: Moon) {
   let orbitRadiusCtrl: any;
   let orbitPeriodCtrl: any;
   let inclinationCtrl: any;
-  if (moon.orbit) {
-    orbitRadiusCtrl = folder.add({ orbitRadius_m: defaults.orbitRadius }, "orbitRadius_m", 100_000_000, 500_000_000)
-      .name("Orbit Radius (m)")
-      .onChange((v: number) => {
-        moon.orbit!["orbitRadius"] = v / (moon.scalePerUnit ?? 1_000_000);
-      });
-
-    orbitPeriodCtrl = folder.add(moon.orbit as any, "orbitPeriod", 10 * 24 * 3600, 40 * 24 * 3600).name("Orbit Period (s)");
-
-    inclinationCtrl = folder.add({ inclination_deg: defaults.inclination }, "inclination_deg", -10, 10)
-      .name("Inclination (°)")
-      .onChange((v: number) => {
-        moon.orbit!["inclination"] = v * Math.PI / 180;
-      });
-  }
 
   folder.add({ reset: () => {
       moon.mass = defaults.mass;
@@ -67,12 +52,6 @@ export function createMoonControls(gui: GUI, moon: Moon) {
 
       if (moon.mesh.material instanceof THREE.MeshPhongMaterial) {
         moon.mesh.material.bumpScale = defaults.bumpScale;
-      }
-
-      if (moon.orbit) {
-        moon.orbit!["orbitRadius"] = defaults.orbitRadius / (moon.scalePerUnit ?? 1_000_000);
-        moon.orbit!["orbitPeriod"] = defaults.orbitPeriod;
-        moon.orbit!["inclination"] = defaults.inclination * Math.PI / 180;
       }
 
       massCtrl.setValue(defaults.mass);
