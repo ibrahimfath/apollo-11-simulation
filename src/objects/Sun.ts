@@ -7,7 +7,7 @@ export class Sun {
   public mesh: THREE.Mesh;
 
   constructor(){
-    const detail = 12;
+    const detail = 7;
     const geometry = new THREE.IcosahedronGeometry(7, detail);
     const material = new THREE.MeshBasicMaterial({ color: "#FDB813" })
 

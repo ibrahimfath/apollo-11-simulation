@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import Stats  from "stats.js";
 import { Earth } from "./objects/Earth";
 import { Sun } from "./objects/Sun";
 import { Moon } from "./objects/Moon";
@@ -17,6 +18,8 @@ import { OrbitTrail } from "./visualization/OrbitTrail";
 const { scene, camera, renderer } = createScene();
 const controls = createControls(camera, renderer);
 
+const stats = new Stats();
+document.body.appendChild(stats.dom);
 
 const bloomRenderer = createBloomPipeline(renderer, scene, camera, {
   strength: 2.0, // glow intensity
@@ -77,6 +80,8 @@ const gui = new GuiManager(earth, moon, sun, time, bary);
 function animate() {
   requestAnimationFrame(animate);
 
+  stats.begin(); 
+
   const now = performance.now();
   let dt = (now - last) / 1000;
   last = now;
@@ -99,6 +104,7 @@ function animate() {
   bloomRenderer.render();
 
   controls.update();
+  stats.end()
 }
 
 animate();
