@@ -6,7 +6,6 @@ import { Moon } from "./objects/Moon";
 import { createScene } from "./visualization/scene";
 import { createControls } from "./visualization/controls";
 import { createSkybox } from "./visualization/skybox";
-import { createBloomPipeline} from "./visualization/bloom";
 import { TimeController } from "./physics/TimeController";
 import { GuiManager } from "./ui/GuiManager";
 import { GravityEngine } from "./physics/GravityEngine";
@@ -20,12 +19,6 @@ const controls = createControls(camera, renderer);
 
 const stats = new Stats();
 document.body.appendChild(stats.dom);
-
-const bloomRenderer = createBloomPipeline(renderer, scene, camera, {
-  strength: 2.0, // glow intensity
-  radius: 0.5,   // glow spread
-  threshold: 0.0 // brightness threshold
-});
 
 const earth = new Earth();
 scene.add(earth.group);
@@ -61,8 +54,7 @@ scene.add(moonTrail.object3d);
 
 // 6) Add Sun mesh (bloom)
 const sun = new Sun();
-scene.add(sun.mesh);
-scene.add(sun.light);
+scene.add(sun.group);
 
 // Load and set skybox
 const skyboxTexture = createSkybox("/textures/skybox/");
@@ -100,8 +92,7 @@ function animate() {
 
   gui.updateAll()
   
-  // Render with bloom
-  bloomRenderer.render();
+  renderer.render(scene, camera);
 
   controls.update();
   stats.end()

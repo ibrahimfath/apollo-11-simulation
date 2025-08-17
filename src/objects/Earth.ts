@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import { Atmosphere } from "./Atmosphere";
 import { CelestialBody } from "./CelestialBody";
-import { markForBloom } from "../visualization/bloom";
 
 export class Earth extends CelestialBody {
 
@@ -26,7 +25,6 @@ export class Earth extends CelestialBody {
 
     this.atmosphere.mesh = new THREE.Mesh(this.geometry, this.atmosphere.material);
     this.atmosphere.mesh.scale.setScalar(1.01);
-    markForBloom(this.atmosphere.mesh); // glow effect
     this.group.add(this.atmosphere.mesh);
   }
   
