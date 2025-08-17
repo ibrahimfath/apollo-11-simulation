@@ -12,7 +12,7 @@ export class Barycenter {
     this.bodies = [a, b];
 
     // small neutral marker (scene units)
-    const geo = new THREE.SphereGeometry(0.05, 16, 16);
+    const geo = new THREE.SphereGeometry(1.05, 16, 16);
     const mat = new THREE.MeshBasicMaterial({ color: 0xff00ff });
     this.marker = new THREE.Mesh(geo, mat);
     this.marker.name = "BarycenterMarker";

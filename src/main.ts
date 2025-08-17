@@ -11,6 +11,7 @@ import { setupGUI } from "./ui/guiManager";
 import { GravityEngine } from "./physics/GravityEngine";
 import { G } from "./physics/constants";
 import { Barycenter } from "./physics/Barycenter";
+import { OrbitTrail } from "./visualization/OrbitTrail";
 
 
 const { scene, camera, renderer } = createScene();
@@ -51,6 +52,10 @@ moon.setInitialState(moonPos, moonVel);
 // create engine
 const gravityEngine = new GravityEngine([earth, moon], 1e3);
 
+const moonTrail = new OrbitTrail(0x837eb0, 50, 5000);
+scene.add(moonTrail.object3d);
+
+
 // 6) Add Sun mesh (bloom)
 const sun = new Sun();
 scene.add(sun.mesh);
@@ -60,7 +65,7 @@ scene.add(sun.light);
 const skyboxTexture = createSkybox("/textures/skybox/");
 scene.background = skyboxTexture;
 
-const time = new TimeController(1);
+const time = new TimeController(3000);
 let last = performance.now();
 
 // after you create earth, moon …
@@ -83,6 +88,8 @@ function animate() {
 
   earth.update(dt);
   moon.update(dt);
+
+  moonTrail.addPoint(moon.group.position);
 
   moonUI.updatePhysicsUI();
 
