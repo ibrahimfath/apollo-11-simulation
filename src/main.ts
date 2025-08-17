@@ -7,7 +7,7 @@ import { createControls } from "./visualization/controls";
 import { createSkybox } from "./visualization/skybox";
 import { createBloomPipeline} from "./visualization/bloom";
 import { TimeController } from "./physics/TimeController";
-import { setupGUI } from "./ui/guiManager";
+import { GuiManager } from "./ui/GuiManager";
 import { GravityEngine } from "./physics/GravityEngine";
 import { G } from "./physics/constants";
 import { Barycenter } from "./physics/Barycenter";
@@ -33,7 +33,7 @@ scene.add(moon.group);
 // real-world values
 const mEarth = earth.mass; // 5.972e24
 const mMoon  = moon.mass;  // 7.34767309e22
-const r = 384_400_000;     // avg distance in meters
+const r = 184_400_000;     // avg distance in meters
 
 // place Earth and Moon so COM is near origin (optional)
 const earthPos = new THREE.Vector3(- (mMoon / (mEarth + mMoon)) * r, 0, 0);
@@ -65,14 +65,14 @@ scene.add(sun.light);
 const skyboxTexture = createSkybox("/textures/skybox/");
 scene.background = skyboxTexture;
 
-const time = new TimeController(3000);
+const time = new TimeController(1);
 let last = performance.now();
 
 // after you create earth, moon …
 const bary = new Barycenter(earth, moon);
 scene.add(bary.marker);
 
-const { gui, timeUI, earthMoonUI, earthUI, moonUI, sunUI } = setupGUI(earth, moon, sun, time, bary);
+const gui = new GuiManager(earth, moon, sun, time, bary);
 
 function animate() {
   requestAnimationFrame(animate);
@@ -91,10 +91,9 @@ function animate() {
 
   moonTrail.addPoint(moon.group.position);
 
-  moonUI.updatePhysicsUI();
-
   bary.update();
-  earthMoonUI.update();
+
+  gui.updateAll()
   
   // Render with bloom
   bloomRenderer.render();
