@@ -6,17 +6,19 @@ export class OrbitTrail {
   private frameCounter = 0;
   private sampleRate: number;
   private maxPoints?: number;
+  
 
   constructor(
     color = 0xffffff,
     sampleRate = 1,      // add point every N frames
-    maxPoints?: number   // optional safety cap
+    maxPoints?: number,   // optional safety cap
+    pointSize = 2          // new: size in pixels
   ) {
     this.sampleRate = Math.max(1, sampleRate);
     this.maxPoints = maxPoints;
 
     const geometry = new THREE.BufferGeometry();
-    const material = new THREE.PointsMaterial({ color });
+    const material = new THREE.PointsMaterial({ color, size: pointSize });
     this.line = new THREE.Points(geometry, material);
   }
 

@@ -35,7 +35,6 @@ export class Spacecraft {
     const geometry = new THREE.SphereGeometry(scaledRadius, 16, 12);
     const material = new THREE.MeshStandardMaterial({ color: props.color ?? 0xff0000 });
     this.mesh = new THREE.Mesh(geometry, material);
-    this.mesh.position.set(0, 0, 8);
     markForBloom(this.mesh);
     this.group.add(this.mesh);
 

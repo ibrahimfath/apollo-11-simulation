@@ -17,6 +17,7 @@ import { Spacecraft } from "./objects/Spacecraft";
 import { SpacecraftPropagatorRK4 } from "./physics/SpacecraftPropagatorRK4";
 
 
+const inv = 1 / 1_000_000;
 const { scene, camera, renderer } = createScene();
 const controls = createControls(camera, renderer);
 
@@ -57,7 +58,7 @@ moon.setInitialState(moonPos, moonVel);
 // create engine
 const gravityEngine = new GravityEngine([earth, moon], 1e3);
 
-const moonTrail = new OrbitTrail(0x837eb0, 50, 5000);
+const moonTrail = new OrbitTrail(0x837eb0, 50, 5000, 0.5);
 scene.add(moonTrail.object3d);
 
 
@@ -69,11 +70,11 @@ scene.add(sun.group);
 const spacecraft = new Spacecraft({});
 scene.add(spacecraft.group);
 
-const spacecraftTrail = new OrbitTrail(0xc8fb5b, 50, 5000);
+const spacecraftTrail = new OrbitTrail(0xc8fb5b, 50, 5000, 0.01);
 scene.add(spacecraftTrail.object3d);
 
 // Initial LEO state (circular ~400 km)
-const r0 = earth.radius + 400_000;            // m
+const r0 = earth.radius + 300_000;            // m
 const muEarth = G * earth.mass;
 const vCirc = Math.sqrt(muEarth / r0);        // ~7.67 km/s
 const rVec = new THREE.Vector3(r0, 0, 0);     // along +X
@@ -96,6 +97,7 @@ scene.add(bary.marker);
 
 const gui = new GuiManager(earth, moon, sun, time, bary);
 
+
 function animate() {
   requestAnimationFrame(animate);
 
@@ -113,14 +115,25 @@ function animate() {
   earth.update(dt);
   moon.update(dt);
 
-  moonTrail.addPoint(moon.group.position);
+  moonTrail.addPoint(
+    new THREE.Vector3(
+      moon.r_m.x * inv,
+      moon.r_m.y * inv,
+      moon.r_m.z * inv
+    )
+  );  
 
   bary.update();
 
   scProp.stepWithSubsteps(dt, 30);
-  // spacecraftTrail.addPoint(spacecraft.group.position);
-
-
+  spacecraftTrail.addPoint(
+    new THREE.Vector3(
+      spacecraft.r_m.x * inv,
+      spacecraft.r_m.y * inv,
+      spacecraft.r_m.z * inv
+    )
+  );  
+  
   gui.updateAll()
   
   bloomRenderer.render();
