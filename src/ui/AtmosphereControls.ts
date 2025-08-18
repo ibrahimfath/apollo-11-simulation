@@ -33,7 +33,7 @@ export class AtmosphereControls {
       this.atmosphere.material!.uniforms.atmosphereBias.value = v;
     });
 
-    this.folder.add(this.atmosphere, "scale", 0, 10).name("Atmosphere Scale").onChange((v: number) => {
+    this.folder.add(this.atmosphere, "scale", 0, 50).name("Atmosphere Scale").onChange((v: number) => {
       this.atmosphere.material!.uniforms.atmosphereScale.value = v;
     });
 

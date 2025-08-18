@@ -5,8 +5,8 @@ export class SunControls {
   public folder: GUI;
   private sun: Sun;
 
-  private defaults = { color: 0xffffff, intensity: 1.5 };
-  private params = { lightColor: 0xffffff, intensity: 1.5 };
+  private defaults = { color: 0xffffff, intensity: 3.0 };
+  private params = { lightColor: 0xffffff, intensity: 3.0 };
 
   constructor(gui: GUI, sun: Sun) {
     this.sun = sun;
