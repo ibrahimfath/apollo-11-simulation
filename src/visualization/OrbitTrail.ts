@@ -3,8 +3,8 @@ import * as THREE from "three";
 export class OrbitTrail {
   private points: THREE.Vector3[] = [];
   private line: THREE.Points;
-  private frameCounter = 0;
-  private sampleRate: number;
+  public frameCounter = 0;
+  public sampleRate: number;
   private maxPoints?: number;
   
 

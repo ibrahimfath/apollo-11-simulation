@@ -11,13 +11,11 @@ import { GuiManager } from "./ui/GuiManager";
 import { GravityEngine } from "./physics/GravityEngine";
 import { G } from "./physics/constants";
 import { Barycenter } from "./physics/Barycenter";
-import { OrbitTrail } from "./visualization/OrbitTrail";
 import { createBloomPipeline } from "./visualization/bloom";
 import { Spacecraft } from "./objects/Spacecraft";
 import { SpacecraftPropagatorRK4 } from "./physics/SpacecraftPropagatorRK4";
 
 
-const inv = 1 / 1_000_000;
 const { scene, camera, renderer } = createScene();
 const controls = createControls(camera, renderer);
 
@@ -35,6 +33,7 @@ scene.add(earth.group);
 
 const moon = new Moon();
 scene.add(moon.group);
+scene.add(moon.trail.object3d);
 
 // real-world values
 const mEarth = earth.mass; // 5.972e24
@@ -58,10 +57,6 @@ moon.setInitialState(moonPos, moonVel);
 // create engine
 const gravityEngine = new GravityEngine([earth, moon], 1e3);
 
-const moonTrail = new OrbitTrail(0x837eb0, 50, 5000, 0.5);
-scene.add(moonTrail.object3d);
-
-
 // 6) Add Sun mesh (bloom)
 const sun = new Sun();
 scene.add(sun.group);
@@ -69,9 +64,8 @@ scene.add(sun.group);
 
 const spacecraft = new Spacecraft({});
 scene.add(spacecraft.group);
+scene.add(spacecraft.trail.object3d);
 
-const spacecraftTrail = new OrbitTrail(0xc8fb5b, 50, 5000, 0.01);
-scene.add(spacecraftTrail.object3d);
 
 // Initial LEO state (circular ~400 km)
 const r0 = earth.radius + 300_000;            // m
@@ -115,24 +109,10 @@ function animate() {
   earth.update(dt);
   moon.update(dt);
 
-  moonTrail.addPoint(
-    new THREE.Vector3(
-      moon.r_m.x * inv,
-      moon.r_m.y * inv,
-      moon.r_m.z * inv
-    )
-  );  
-
   bary.update();
 
   scProp.stepWithSubsteps(dt, 30);
-  spacecraftTrail.addPoint(
-    new THREE.Vector3(
-      spacecraft.r_m.x * inv,
-      spacecraft.r_m.y * inv,
-      spacecraft.r_m.z * inv
-    )
-  );  
+  spacecraft.update()
   
   gui.updateAll()
   
