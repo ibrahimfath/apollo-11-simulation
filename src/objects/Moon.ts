@@ -1,6 +1,9 @@
+import * as THREE from "three";
+import { OrbitTrail } from "../visualization/OrbitTrail";
 import { CelestialBody } from "./CelestialBody";
 
 export class Moon extends CelestialBody {
+  public trail: OrbitTrail;
 
   constructor() {
     super({
@@ -16,7 +19,23 @@ export class Moon extends CelestialBody {
       textureMap: "/textures/moon/moonmap4k.jpg",
       bumpMap: "/textures/moon/moonbump4k.jpg",
     });
+    this.trail = new OrbitTrail(0x837eb0, 50, 5000, 0.5);
+
   }
   
+  update(deltaTime: number) {
+    const rotationSpeed = (2 * Math.PI) / this.totalRotationPeriod; // rad/s
+    this.mesh.rotation.y += rotationSpeed * deltaTime;
+    
+    const inv = 1 / 1_000_000;
+
+    this.trail.addPoint(
+      new THREE.Vector3(
+        this.r_m.x * inv,
+        this.r_m.y * inv,
+        this.r_m.z * inv
+      )
+    ); 
+  }
 
 }

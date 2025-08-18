@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { markForBloom } from "../visualization/bloom";
+import { OrbitTrail } from "../visualization/OrbitTrail";
 
 export interface SpacecraftProps {
   scalePerUnit?: number;
@@ -12,6 +13,8 @@ export interface SpacecraftProps {
 export class Spacecraft {
   public group: THREE.Group;
   public mesh: THREE.Mesh;
+  public trail: OrbitTrail;
+  
 
   public dryMass: number;    // kg (structure + payload)
   public fuelMass: number;   // kg (remaining propellant)
@@ -38,6 +41,9 @@ export class Spacecraft {
     markForBloom(this.mesh);
     this.group.add(this.mesh);
 
+    this.trail = new OrbitTrail(0xc8fb5b, 50, 5000, 0.01);
+
+
   }
 
   /** wet mass: dry + fuel */
@@ -60,6 +66,17 @@ export class Spacecraft {
       const fwd = this.v_mps.clone().normalize();
       this.mesh.lookAt(this.group.position.clone().add(fwd));
     }
+  }
+
+  update() {
+    const inv = 1 / 1_000_000;
+    this.trail.addPoint(
+      new THREE.Vector3(
+        this.r_m.x * inv,
+        this.r_m.y * inv,
+        this.r_m.z * inv
+      )
+    ); 
   }
   
 
