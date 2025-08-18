@@ -9,8 +9,8 @@ export class AtmosphereControls {
   private defaults = {
     rimHex: 0x0088ff,
     facingHex: 0x000000,
-    bias: 0.206,
-    scale: 1.7,
+    bias: 0.1,
+    scale: 0.5,
     power: 5.0,
   };
 

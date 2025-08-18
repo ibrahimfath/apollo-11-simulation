@@ -12,6 +12,7 @@ import { GravityEngine } from "./physics/GravityEngine";
 import { G } from "./physics/constants";
 import { Barycenter } from "./physics/Barycenter";
 import { OrbitTrail } from "./visualization/OrbitTrail";
+import { createBloomPipeline } from "./visualization/bloom";
 
 
 const { scene, camera, renderer } = createScene();
@@ -19,6 +20,12 @@ const controls = createControls(camera, renderer);
 
 const stats = new Stats();
 document.body.appendChild(stats.dom);
+
+const bloomRenderer = createBloomPipeline(renderer, scene, camera, {
+  strength: 2.0, // glow intensity
+  radius: 0.5,   // glow spread
+  threshold: 0.0 // brightness threshold
+});
 
 const earth = new Earth();
 scene.add(earth.group);
@@ -92,7 +99,7 @@ function animate() {
 
   gui.updateAll()
   
-  renderer.render(scene, camera);
+  bloomRenderer.render();
 
   controls.update();
   stats.end()

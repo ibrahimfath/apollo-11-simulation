@@ -16,8 +16,8 @@ export class Atmosphere {
   constructor() {
     this.rimHex = 0x0088ff;
     this.facingHex = 0x000000;
-    this.bias = 0.2;
-    this.scale = 1.7;
+    this.bias = 0.1;
+    this.scale = 0.5;
     this.power = 5.0;
 
     const uniforms = {
