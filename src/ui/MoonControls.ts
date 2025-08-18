@@ -14,6 +14,7 @@ export class MoonControls {
     totalRotationPeriod: 27.32 * 24 * 3600,
     axialTilt: 6.68,
     bumpScale: 0.5,
+    sampleRate: 50,
   };
 
   constructor(gui: GUI, moon: Moon) {
@@ -55,7 +56,12 @@ export class MoonControls {
     this.folder.add(this.physicsState, "vel").name("Velocity (m/s)");
     this.folder.add(this.physicsState, "acc").name("Accel (m/s²)");
 
-    this.folder.add({ reset: () => this.reset(massCtrl, radiusCtrl, rotCtrl, tiltCtrl, bumpCtrl) }, "reset").name("Reset Moon");
+    const sampleRateCtcl = this.folder.add(this.moon.trail, "sampleRate", 1, 500).name("Orbit Trail Sample Rate").onChange((value: number) => {
+      this.moon.trail.frameCounter = 0;
+      this.moon.trail.sampleRate = value;
+    });
+
+    this.folder.add({ reset: () => this.reset(massCtrl, radiusCtrl, rotCtrl, tiltCtrl, bumpCtrl, sampleRateCtcl) }, "reset").name("Reset Moon");
   }
 
   public update() {
@@ -73,6 +79,8 @@ export class MoonControls {
     this.moon.totalRotationPeriod = this.defaults.totalRotationPeriod;
     this.moon.axialTilt = this.defaults.axialTilt;
     this.moon.group.rotation.z = -this.defaults.axialTilt * Math.PI / 180;
+    this.moon.trail.sampleRate = this.defaults.sampleRate;
+    this.moon.trail.frameCounter = 0;
 
     if (this.moon.mesh.material instanceof THREE.MeshPhongMaterial) {
       this.moon.mesh.material.bumpScale = this.defaults.bumpScale;
