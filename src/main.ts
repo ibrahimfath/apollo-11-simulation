@@ -13,6 +13,7 @@ import { G } from "./physics/constants";
 import { Barycenter } from "./physics/Barycenter";
 import { OrbitTrail } from "./visualization/OrbitTrail";
 import { createBloomPipeline } from "./visualization/bloom";
+import { Spacecraft } from "./objects/Spacecraft";
 
 
 const { scene, camera, renderer } = createScene();
@@ -62,6 +63,10 @@ scene.add(moonTrail.object3d);
 // 6) Add Sun mesh (bloom)
 const sun = new Sun();
 scene.add(sun.group);
+
+
+const spacecraft = new Spacecraft({});
+scene.add(spacecraft.group);
 
 // Load and set skybox
 const skyboxTexture = createSkybox("/textures/skybox/");
