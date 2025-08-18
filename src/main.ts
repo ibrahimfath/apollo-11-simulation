@@ -14,6 +14,7 @@ import { Barycenter } from "./physics/Barycenter";
 import { OrbitTrail } from "./visualization/OrbitTrail";
 import { createBloomPipeline } from "./visualization/bloom";
 import { Spacecraft } from "./objects/Spacecraft";
+import { SpacecraftPropagatorRK4 } from "./physics/SpacecraftPropagatorRK4";
 
 
 const { scene, camera, renderer } = createScene();
@@ -68,6 +69,20 @@ scene.add(sun.group);
 const spacecraft = new Spacecraft({});
 scene.add(spacecraft.group);
 
+const spacecraftTrail = new OrbitTrail(0xc8fb5b, 50, 5000);
+scene.add(spacecraftTrail.object3d);
+
+// Initial LEO state (circular ~400 km)
+const r0 = earth.radius + 400_000;            // m
+const muEarth = G * earth.mass;
+const vCirc = Math.sqrt(muEarth / r0);        // ~7.67 km/s
+const rVec = new THREE.Vector3(r0, 0, 0);     // along +X
+const vVec = new THREE.Vector3(0, 0, vCirc);  // tangential along +Z
+spacecraft.setInitialState(rVec, vVec);
+
+// RK4 propagator for spacecraft under Earth gravity (add Moon later)
+const scProp = new SpacecraftPropagatorRK4({craft: spacecraft, primaries: [earth, moon], eps: 0});
+
 // Load and set skybox
 const skyboxTexture = createSkybox("/textures/skybox/");
 scene.background = skyboxTexture;
@@ -101,6 +116,10 @@ function animate() {
   moonTrail.addPoint(moon.group.position);
 
   bary.update();
+
+  scProp.stepWithSubsteps(dt, 30);
+  // spacecraftTrail.addPoint(spacecraft.group.position);
+
 
   gui.updateAll()
   
