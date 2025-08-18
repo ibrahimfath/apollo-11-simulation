@@ -31,7 +31,7 @@ const bloomRenderer = createBloomPipeline(renderer, scene, camera, {
 const earth = new Earth();
 scene.add(earth.group);
 
-const moon = new Moon(earth);
+const moon = new Moon();
 scene.add(moon.group);
 
 // real-world values
@@ -72,7 +72,7 @@ scene.add(spacecraft.group);
 const skyboxTexture = createSkybox("/textures/skybox/");
 scene.background = skyboxTexture;
 
-const time = new TimeController(1);
+const time = new TimeController(3000);
 let last = performance.now();
 
 // after you create earth, moon …

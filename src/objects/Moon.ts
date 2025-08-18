@@ -2,7 +2,7 @@ import { CelestialBody } from "./CelestialBody";
 
 export class Moon extends CelestialBody {
 
-  constructor(earth: CelestialBody) {
+  constructor() {
     super({
       name: "Moon",
       mass: 7.34767309e22,                // kg
