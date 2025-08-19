@@ -79,13 +79,13 @@ const vVec = new THREE.Vector3(0, 0, vCirc);  // tangential along +Z
 spacecraft.setInitialState(rVec, vVec);
 
 // RK4 propagator for spacecraft under Earth gravity (add Moon later)
-const scProp = new SpacecraftPropagatorRK4({craft: spacecraft, primaries: [earth, moon], eps: 0});
+const scProp = new SpacecraftPropagatorRK4({craft: spacecraft, primaries: [earth, moon], eps: 0, atmosphere: earth.atmosphere});
 
 // Load and set skybox
 const skyboxTexture = createSkybox("/textures/skybox/");
 scene.background = skyboxTexture;
 
-const time = new TimeController(3000);
+const time = new TimeController(1000);
 let last = performance.now();
 
 // after you create earth, moon …

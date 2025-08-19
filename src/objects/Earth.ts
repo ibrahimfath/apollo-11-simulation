@@ -1,7 +1,5 @@
-import * as THREE from "three";
 import { Atmosphere } from "./Atmosphere";
 import { CelestialBody } from "./CelestialBody";
-import { markForBloom } from "../visualization/bloom";
 
 export class Earth extends CelestialBody {
 
@@ -22,11 +20,7 @@ export class Earth extends CelestialBody {
       specularMap: "/textures/earth/8k_earth_specular_map.jpg",
       cloudsMap: "/textures/earth/8k_earth_clouds.jpg",
     });
-    this.atmosphere = new Atmosphere();
-
-    this.atmosphere.mesh = new THREE.Mesh(this.geometry, this.atmosphere.material);
-    this.atmosphere.mesh.scale.setScalar(1.01);
-    markForBloom(this.atmosphere.mesh);
+    this.atmosphere = new Atmosphere({geometry: this.geometry});
     this.group.add(this.atmosphere.mesh);
   }
   
