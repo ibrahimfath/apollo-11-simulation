@@ -85,7 +85,7 @@ const scProp = new SpacecraftPropagatorRK4({craft: spacecraft, primaries: [earth
 const skyboxTexture = createSkybox("/textures/skybox/");
 scene.background = skyboxTexture;
 
-const time = new TimeController(1000);
+const time = new TimeController(10);
 let last = performance.now();
 
 // after you create earth, moon …
@@ -93,7 +93,7 @@ const bary = new Barycenter(earth, moon);
 scene.add(bary.marker);
 
 const gui = new GuiManager(earth, moon, sun, time, bary);
-const spacecraftUI = new SpacecraftGUI(spacecraft);
+const spacecraftUI = new SpacecraftGUI(spacecraft, earth.atmosphere);
 
 function animate() {
   requestAnimationFrame(animate);

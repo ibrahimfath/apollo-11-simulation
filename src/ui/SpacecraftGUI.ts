@@ -1,15 +1,24 @@
 import GUI from "lil-gui";
 import { Spacecraft } from "../objects/Spacecraft";
+import { computeDragAccel } from "../physics/Drag";
+import type { Atmosphere } from "../objects/Atmosphere";
 
 export class SpacecraftGUI {
   public gui: GUI;
   private spacecraft: Spacecraft;
+  private atmosphere: Atmosphere;
 
   // state object for telemetry display
   private telemetry = {
     pos: "(0,0,0)",
     vel: "(0,0,0)",
     acc: "(0,0,0)"
+  };
+  // live state for readouts
+  private atmosphereState = {
+    altitude: "0 km",
+    density: "0",
+    aDrag: "0",
   };
 
   private defaults = {
@@ -20,8 +29,9 @@ export class SpacecraftGUI {
     maxPoints: 5000,
   };
 
-  constructor(spacecraft: Spacecraft) {
+  constructor(spacecraft: Spacecraft, atmosphere: Atmosphere) {
     this.spacecraft = spacecraft;
+    this.atmosphere = atmosphere;
 
     this.gui = new GUI({
       width: 400,
@@ -72,6 +82,13 @@ export class SpacecraftGUI {
     telemetryFolder.add(this.telemetry, "vel").name("Velocity (m/s)");
     telemetryFolder.add(this.telemetry, "acc").name("Accel (m/s²)");
 
+    //atmosphere:
+    const atmosphereFolder = this.gui.addFolder("Atmosphere");
+    atmosphereFolder.add(this.atmosphereState, "altitude").name("Craft Altitude");
+    atmosphereFolder.add(this.atmosphereState, "density").name("ρ (kg/m³)");
+    atmosphereFolder.add(this.atmosphereState, "aDrag").name("|a_drag| (m/s²)");
+
+
     // Reset button
     this.gui.add({ reset: () => this.reset() }, "reset").name("Reset Spacecraft");
 
@@ -83,6 +100,22 @@ export class SpacecraftGUI {
     this.telemetry.pos = `(${this.spacecraft.r_m.x.toFixed(2)}, ${this.spacecraft.r_m.y.toFixed(2)}, ${this.spacecraft.r_m.z.toFixed(2)})`;
     this.telemetry.vel = `(${this.spacecraft.v_mps.x.toFixed(2)}, ${this.spacecraft.v_mps.y.toFixed(2)}, ${this.spacecraft.v_mps.z.toFixed(2)})`;
     this.telemetry.acc = `(${this.spacecraft.a_mps2.x.toFixed(4)}, ${this.spacecraft.a_mps2.y.toFixed(4)}, ${this.spacecraft.a_mps2.z.toFixed(4)})`;
+    
+    if (!this.spacecraft) return;
+
+    const h = this.atmosphere.altitudeFromPosition(this.spacecraft.r_m);
+    const rho = this.atmosphere.densityAtAltitude(h);
+
+    let aDragMag = 0;
+    if (rho > 0) {
+      const aDrag = computeDragAccel(this.spacecraft, this.atmosphere);
+      aDragMag = aDrag.length();
+    }
+
+    this.atmosphereState.altitude = `${(h / 1000).toFixed(1)} km`;
+    this.atmosphereState.density = rho.toExponential(3);
+    this.atmosphereState.aDrag = aDragMag.toExponential(3);
+
 
     // Refresh GUI
     this.gui.controllersRecursive().forEach(ctrl => ctrl.updateDisplay());
