@@ -19,6 +19,7 @@ export class Spacecraft {
   public dryMass: number;    // kg (structure + payload)
   public fuelMass: number;   // kg (remaining propellant)
   public radius: number;     // meters (visual/scalar reference)
+  public baseRadius: number;
   public scalePerUnit: number;
 
   // Physics state (SI)
@@ -32,6 +33,7 @@ export class Spacecraft {
     this.dryMass = props.dryMass ?? 13_000; // kg
     this.fuelMass = props.fuelMass ?? 120_000; // kg
     this.radius = props.radius ?? 10000; // meters (visual)
+    this.baseRadius = this.radius;
     const scaledRadius = this.radius / this.scalePerUnit;
 
     this.group = new THREE.Group();
@@ -44,6 +46,12 @@ export class Spacecraft {
     this.trail = new OrbitTrail(0xc8fb5b, 50, 5000, 0.01);
 
 
+  }
+
+  setRadius(newRadius: number) {
+    const scaleFactor = newRadius / this.baseRadius;
+    this.radius = newRadius;
+    this.group.scale.setScalar(scaleFactor);
   }
 
   /** wet mass: dry + fuel */

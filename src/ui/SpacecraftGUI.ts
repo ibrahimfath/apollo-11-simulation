@@ -24,7 +24,7 @@ export class SpacecraftGUI {
     this.spacecraft = spacecraft;
 
     this.gui = new GUI({
-      width: 350,
+      width: 400,
       title: "Spacecraft Controls"
     });
 
@@ -51,7 +51,9 @@ export class SpacecraftGUI {
     const general = this.gui.addFolder("General");
     general.add(this.spacecraft, "dryMass", 1000, 50_000).name("Dry Mass (kg)");
     general.add(this.spacecraft, "fuelMass", 0, 200_000).name("Fuel Mass (kg)");
-    general.add(this.spacecraft, "radius", 0, 100_000).name("Radius (m)");
+    general.add(this.spacecraft, "radius", 0, 100_000).name("Radius (m)").onChange((value: number) => {
+      this.spacecraft.setRadius(value);
+    });
 
     // Orbit Trail
     const trail = this.gui.addFolder("Orbit Trail");
@@ -89,7 +91,7 @@ export class SpacecraftGUI {
   public reset() {
     this.spacecraft.dryMass = this.defaults.dryMass;
     this.spacecraft.fuelMass = this.defaults.fuelMass;
-    this.spacecraft.radius = this.defaults.radius;
+    this.spacecraft.setRadius(this.defaults.radius);
     this.spacecraft.trail.sampleRate = this.defaults.sampleRate;
     this.spacecraft.trail.maxPoints = this.defaults.maxPoints;
     this.spacecraft.trail.frameCounter = 0;
