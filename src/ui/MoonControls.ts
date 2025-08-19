@@ -15,6 +15,7 @@ export class MoonControls {
     axialTilt: 6.68,
     bumpScale: 0.5,
     sampleRate: 50,
+    maxPoints: 3000,
   };
 
   constructor(gui: GUI, moon: Moon) {
@@ -56,12 +57,14 @@ export class MoonControls {
     this.folder.add(this.physicsState, "vel").name("Velocity (m/s)");
     this.folder.add(this.physicsState, "acc").name("Accel (m/s²)");
 
-    const sampleRateCtcl = this.folder.add(this.moon.trail, "sampleRate", 1, 500).name("Orbit Trail Sample Rate").onChange((value: number) => {
+    const sampleRateCtrl = this.folder.add(this.moon.trail, "sampleRate", 1, 500).step(1).name("Orbit Trail Sample Rate").onChange((value: number) => {
       this.moon.trail.frameCounter = 0;
       this.moon.trail.sampleRate = value;
     });
 
-    this.folder.add({ reset: () => this.reset(massCtrl, radiusCtrl, rotCtrl, tiltCtrl, bumpCtrl, sampleRateCtcl) }, "reset").name("Reset Moon");
+    const MaxPointsCtrl = this.folder.add(this.moon.trail, "maxPoints", 0, 5000).step(1).name("Orbit Trail Max Points");
+
+    this.folder.add({ reset: () => this.reset(massCtrl, radiusCtrl, rotCtrl, tiltCtrl, bumpCtrl, sampleRateCtrl, MaxPointsCtrl) }, "reset").name("Reset Moon");
   }
 
   public update() {

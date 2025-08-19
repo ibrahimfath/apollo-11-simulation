@@ -14,12 +14,15 @@ import { Barycenter } from "./physics/Barycenter";
 import { createBloomPipeline } from "./visualization/bloom";
 import { Spacecraft } from "./objects/Spacecraft";
 import { SpacecraftPropagatorRK4 } from "./physics/SpacecraftPropagatorRK4";
+import { SpacecraftGUI } from "./ui/SpacecraftGUI";
 
 
 const { scene, camera, renderer } = createScene();
 const controls = createControls(camera, renderer);
 
 const stats = new Stats();
+stats.dom.style.position = "absolute";
+stats.dom.style.top = "690px";
 document.body.appendChild(stats.dom);
 
 const bloomRenderer = createBloomPipeline(renderer, scene, camera, {
@@ -90,7 +93,7 @@ const bary = new Barycenter(earth, moon);
 scene.add(bary.marker);
 
 const gui = new GuiManager(earth, moon, sun, time, bary);
-
+const spacecraftUI = new SpacecraftGUI(spacecraft);
 
 function animate() {
   requestAnimationFrame(animate);
@@ -112,9 +115,10 @@ function animate() {
   bary.update();
 
   scProp.stepWithSubsteps(dt, 30);
-  spacecraft.update()
+  spacecraft.update();
   
-  gui.updateAll()
+  gui.updateAll();
+  spacecraftUI.update();
   
   bloomRenderer.render();
 

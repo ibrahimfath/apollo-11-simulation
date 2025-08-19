@@ -19,7 +19,7 @@ export class Moon extends CelestialBody {
       textureMap: "/textures/moon/moonmap4k.jpg",
       bumpMap: "/textures/moon/moonbump4k.jpg",
     });
-    this.trail = new OrbitTrail(0x837eb0, 50, 5000, 0.5);
+    this.trail = new OrbitTrail(0x837eb0, 50,3000, 0.5);
 
   }
   

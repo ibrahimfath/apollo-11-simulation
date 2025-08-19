@@ -23,6 +23,14 @@ export class GuiManager {
       width: 400,
       title: "Simulation Controls",
     });
+    Object.assign(this.gui.domElement.style, {
+      backgroundColor: "rgba(10, 20, 30, 0.95)", // deep dark blue
+      border: "1px solid #00ffcc",
+      borderRadius: "8px",
+      fontFamily: "monospace",
+      fontSize: "13px",
+      boxShadow: "0 0 15px rgba(0, 255, 204, 0.4)",
+    });
 
     this.timeUI = new TimeControls(this.gui, time);
     this.earthUI = new EarthControls(this.gui, earth);
@@ -45,6 +53,6 @@ export class GuiManager {
   public updateAll() {
     this.earthUI.update();
     this.moonUI.update();
-    this.earthMoonUI.update()
+    this.earthMoonUI.update();
   }
 }

@@ -5,7 +5,7 @@ export class OrbitTrail {
   private line: THREE.Points;
   public frameCounter = 0;
   public sampleRate: number;
-  private maxPoints?: number;
+  public maxPoints?: number;
   
 
   constructor(
