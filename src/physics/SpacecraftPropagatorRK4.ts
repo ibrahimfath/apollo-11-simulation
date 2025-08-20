@@ -36,7 +36,9 @@ export class SpacecraftPropagatorRK4 {
 
     // Drag (only if atmosphere present)
     if (this.atmosphere) {
-      const rho = this.atmosphere.densityAtAltitude(r.length() - this.primaries[0].radius); 
+      const earth = this.primaries[0];
+      const altitude = r.distanceTo(earth.r_m) - earth.radius;
+      const rho = this.atmosphere.densityAtAltitude(altitude);
       // crude: assume first primary = Earth
       const Cd = this.dragParams?.Cd ?? 2.2;
       const A = this.dragParams?.area ?? Math.PI * this.craft.radius ** 2;

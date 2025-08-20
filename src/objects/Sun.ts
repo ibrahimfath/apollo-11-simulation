@@ -13,7 +13,7 @@ export class Sun {
     const material = new THREE.MeshBasicMaterial({ color: "#FDB813" })
 
     this.mesh = new THREE.Mesh(geometry, material);
-    this.mesh.position.set(0, 0, 700);
+    this.mesh.position.set(0, 0, 1000);
     markForBloom(this.mesh); // Sun glows
     
     this.light = new THREE.DirectionalLight(0xffffff, 3.0);

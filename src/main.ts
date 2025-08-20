@@ -41,7 +41,7 @@ scene.add(moon.trail.object3d);
 // real-world values
 const mEarth = earth.mass; // 5.972e24
 const mMoon  = moon.mass;  // 7.34767309e22
-const r = 184_400_000;     // avg distance in meters
+const r = 384_400_000;     // avg distance in meters
 
 // place Earth and Moon so COM is near origin (optional)
 const earthPos = new THREE.Vector3(- (mMoon / (mEarth + mMoon)) * r, 0, 0);
