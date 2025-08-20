@@ -70,12 +70,13 @@ scene.add(spacecraft.group);
 scene.add(spacecraft.trail.object3d);
 
 
-// Initial LEO state (circular ~400 km)
-const r0 = earth.radius + 300_000;            // m
+// Initial LEO state (circular ~300 km)
+const r0 = earth.radius + 300_000;
 const muEarth = G * earth.mass;
-const vCirc = Math.sqrt(muEarth / r0);        // ~7.67 km/s
-const rVec = new THREE.Vector3(r0, 0, 0);     // along +X
-const vVec = new THREE.Vector3(0, 0, vCirc);  // tangential along +Z
+const vCirc = Math.sqrt(muEarth / r0);
+
+const rVec = earth.r_m.clone().add(new THREE.Vector3(r0, 0, 0));
+const vVec = earth.v_mps.clone().add(new THREE.Vector3(0, 0, vCirc));
 spacecraft.setInitialState(rVec, vVec);
 
 // RK4 propagator for spacecraft under Earth gravity (add Moon later)
@@ -93,7 +94,7 @@ const bary = new Barycenter(earth, moon);
 scene.add(bary.marker);
 
 const gui = new GuiManager(earth, moon, sun, time, bary);
-const spacecraftUI = new SpacecraftGUI(spacecraft, earth.atmosphere);
+const spacecraftUI = new SpacecraftGUI(spacecraft, earth.atmosphere, earth);
 
 function animate() {
   requestAnimationFrame(animate);

@@ -4,6 +4,7 @@ import { CelestialBody } from "../objects/CelestialBody";
 import { gravityAccelAtPoint } from "./gravity";
 import { rk4Step } from "./rk4";
 import type { Atmosphere } from "../objects/Atmosphere";
+import { computeDragAccel } from "./Drag";
 
 export interface PropagatorProps {
   craft: Spacecraft,
@@ -36,17 +37,9 @@ export class SpacecraftPropagatorRK4 {
 
     // Drag (only if atmosphere present)
     if (this.atmosphere) {
-      const earth = this.primaries[0];
-      const altitude = r.distanceTo(earth.r_m) - earth.radius;
-      const rho = this.atmosphere.densityAtAltitude(altitude);
-      // crude: assume first primary = Earth
-      const Cd = this.dragParams?.Cd ?? 2.2;
-      const A = this.dragParams?.area ?? Math.PI * this.craft.radius ** 2;
-      const vMag = v.length();
-      if (vMag > 0) {
-        const dragMag = -0.5 * rho * Cd * A * vMag * vMag / this.craft.mass;
-        a.addScaledVector(v.clone().normalize(), dragMag);
-      }
+      const fakeCraft = { r_m: r, v_mps: v, mass: this.craft.mass }; 
+      const aDrag = computeDragAccel(fakeCraft as any, this.atmosphere, this.dragParams);
+      a.add(aDrag);
     }
     return a;
     };

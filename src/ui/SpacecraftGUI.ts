@@ -2,11 +2,13 @@ import GUI from "lil-gui";
 import { Spacecraft } from "../objects/Spacecraft";
 import { computeDragAccel } from "../physics/Drag";
 import type { Atmosphere } from "../objects/Atmosphere";
+import type { Earth } from "../objects/Earth";
 
 export class SpacecraftGUI {
   public gui: GUI;
   private spacecraft: Spacecraft;
   private atmosphere: Atmosphere;
+  private earth: Earth
 
   // state object for telemetry display
   private telemetry = {
@@ -29,9 +31,10 @@ export class SpacecraftGUI {
     maxPoints: 5000,
   };
 
-  constructor(spacecraft: Spacecraft, atmosphere: Atmosphere) {
+  constructor(spacecraft: Spacecraft, atmosphere: Atmosphere, earth: Earth) {
     this.spacecraft = spacecraft;
     this.atmosphere = atmosphere;
+    this.earth = earth;
 
     this.gui = new GUI({
       width: 400,
@@ -103,7 +106,7 @@ export class SpacecraftGUI {
     
     if (!this.spacecraft) return;
 
-    const h = this.atmosphere.altitudeFromPosition(this.spacecraft.r_m);
+    const h = this.spacecraft.r_m.distanceTo(this.earth.r_m) - this.earth.radius;
     const rho = this.atmosphere.densityAtAltitude(h);
 
     let aDragMag = 0;
