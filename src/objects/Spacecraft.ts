@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { markForBloom } from "../visualization/bloom";
 import { OrbitTrail } from "../visualization/OrbitTrail";
+import { g0 } from "../physics/constants";
 
 export interface SpacecraftProps {
   scalePerUnit?: number;
@@ -27,6 +28,9 @@ export class Spacecraft {
   public v_mps = new THREE.Vector3();  // velocity (m/s)
   public a_mps2 = new THREE.Vector3(); // acceleration (m/s^2) – for display
 
+  //engine:
+  public Isp_s: number;       // specific impulse (s)
+  public maxThrustN: number;  // nominal engine thrust for future finite burns
 
   constructor(props: SpacecraftProps) {
     this.scalePerUnit = 1_000_000;
@@ -44,6 +48,9 @@ export class Spacecraft {
     this.group.add(this.mesh);
 
     this.trail = new OrbitTrail(0xc8fb5b, 50, 5000, 0.01);
+
+    this.Isp_s = 320;         // e.g., ~320 s (placeholder)
+    this.maxThrustN = 100_000; // ~100 kN (placeholder)
 
 
   }
@@ -87,5 +94,34 @@ export class Spacecraft {
     ); 
   }
   
+  // --- Impulsive Δv helper (world-frame) ---
+  /**
+   * Apply an instantaneous delta-v in WORLD coordinates.
+   * Reduces fuel using the rocket equation. If fuel is limited,
+   * it applies the largest dv the remaining propellant affords.
+   */
+  public applyDeltaV(dvWorld: THREE.Vector3, IspOverride?: number) {
+    const dv = dvWorld.length();
+    if (dv <= 0) return;
+
+    const Isp = IspOverride ?? this.Isp_s;
+    const m0 = this.mass;
+    if (m0 <= 0 || this.fuelMass <= 0) return;
+
+    // Fuel needed for the requested dv
+    // dm = m0 - m1, where dv = Isp*g0*ln(m0/m1)
+    const dmNeeded = m0 - m0 / Math.exp(dv / (Isp * g0));
+
+    // Cap by available fuel
+    const dm = Math.min(this.fuelMass, dmNeeded);
+    if (dm <= 0) return;
+
+    // Effective dv if fuel limited
+    const dvEff = Isp * g0 * Math.log(m0 / (m0 - dm));
+
+    const dir = dvWorld.clone().normalize();
+    this.v_mps.addScaledVector(dir, dvEff);
+    this.fuelMass -= dm; // burn the propellant
+  }
 
 }

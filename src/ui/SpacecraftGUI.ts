@@ -3,6 +3,7 @@ import { Spacecraft } from "../objects/Spacecraft";
 import { computeDragAccel } from "../physics/Drag";
 import type { Atmosphere } from "../objects/Atmosphere";
 import type { Earth } from "../objects/Earth";
+import { prograde } from "../physics/guidanceVectors";
 
 export class SpacecraftGUI {
   public gui: GUI;
@@ -67,6 +68,11 @@ export class SpacecraftGUI {
     general.add(this.spacecraft, "radius", 0, 100_000).name("Radius (m)").onChange((value: number) => {
       this.spacecraft.setRadius(value);
     });
+
+    general.add(this.spacecraft, "Isp_s", 0, 1000).name("delta v").onChange((value: number) => {
+      const dir = prograde(this.spacecraft.r_m, this.spacecraft.v_mps);
+      this.spacecraft.applyDeltaV(dir.multiplyScalar(value));
+    })
 
     // Orbit Trail
     const trail = this.gui.addFolder("Orbit Trail");
