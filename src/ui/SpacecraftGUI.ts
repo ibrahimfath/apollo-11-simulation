@@ -1,3 +1,4 @@
+import * as THREE from "three";
 import GUI from "lil-gui";
 import { Spacecraft } from "../objects/Spacecraft";
 import { computeDragAccel } from "../physics/Drag";
@@ -91,6 +92,28 @@ export class SpacecraftGUI {
     atmosphereFolder.add(this.atmosphereState, "density").name("ρ (kg/m³)");
     atmosphereFolder.add(this.atmosphereState, "aDrag").name("|a_drag| (m/s²)");
 
+    // Thrust controls
+    const thrust = this.gui.addFolder("Thrust");
+    thrust.add(this.spacecraft, "engineOn").name("Engine On");
+    thrust.add(this.spacecraft, "T_max_N", 0, 1e6).name("Max Thrust (N)");
+    thrust.add(this.spacecraft, "throttle", 0, 1).name("Throttle").step(0.01);
+    thrust.add(this.spacecraft, "isp_s", 0, 1000).name("ISP (s)");
+
+    // Direction mode selector
+    thrust.add(this.spacecraft, "thrustMode", ["prograde", "retrograde", "radial", "normal", "custom"])
+      .name("Direction Mode");
+    
+    // Optional: allow custom vector if mode = custom
+    const customDir = { x: 1, y: 0, z: 0 };
+    thrust.add(customDir, "x", -1, 1, 0.01).name("Custom X").onChange(() => {
+      this.spacecraft.thrustDirection_world = new THREE.Vector3(customDir.x, customDir.y, customDir.z).normalize();
+    });
+    thrust.add(customDir, "y", -1, 1, 0.01).name("Custom Y").onChange(() => {
+      this.spacecraft.thrustDirection_world = new THREE.Vector3(customDir.x, customDir.y, customDir.z).normalize();
+    });
+    thrust.add(customDir, "z", -1, 1, 0.01).name("Custom Z").onChange(() => {
+      this.spacecraft.thrustDirection_world = new THREE.Vector3(customDir.x, customDir.y, customDir.z).normalize();
+    });
 
     // Reset button
     this.gui.add({ reset: () => this.reset() }, "reset").name("Reset Spacecraft");

@@ -11,6 +11,8 @@ export interface SpacecraftProps {
   color?: number | string;
 }
 
+export type ThrustMode = "prograde" | "retrograde" | "radial" | "normal" | "custom";
+
 export class Spacecraft {
   public group: THREE.Group;
   public mesh: THREE.Mesh;
@@ -34,7 +36,7 @@ export class Spacecraft {
   public throttle: number;     // 0..1
   public engineOn: boolean;
   public thrustDirection_world: THREE.Vector3 | null; // unit vector; null = use velocity direction (prograde)
-
+  public thrustMode: ThrustMode = "prograde";
 
   constructor(props: SpacecraftProps) {
     this.scalePerUnit = 1_000_000;
@@ -134,22 +136,33 @@ export class Spacecraft {
 
   // call to compute thrust vector in world frame
   public getThrustVectorWorld(): THREE.Vector3 {
-    if (!this.engineOn || this.throttle <= 0 || this.T_max_N <= 0) return new THREE.Vector3(); 
+    if (!this.engineOn || this.throttle <= 0 || this.T_max_N <= 0) return new THREE.Vector3();
     const T = this.T_max_N * this.throttle;
-    // direction:
+
     let dir = new THREE.Vector3();
-    if (this.thrustDirection_world && this.thrustDirection_world.lengthSq() > 1e-9) {
-      dir.copy(this.thrustDirection_world).normalize();
-    } else {
-      // fallback to prograde (if velocity small, use radial out)
-      if (this.v_mps.lengthSq() > 1e-9) {
+
+    switch (this.thrustMode) {
+      case "prograde":
         dir.copy(this.v_mps).normalize();
-      } else {
+        break;
+      case "retrograde":
+        dir.copy(this.v_mps).normalize().multiplyScalar(-1);
+        break;
+      case "radial":
         dir.copy(this.r_m).normalize();
-      }
+        break;
+      case "normal":
+        dir.crossVectors(this.r_m, this.v_mps).normalize(); // orbital plane normal
+        break;
+      case "custom":
+        if (this.thrustDirection_world) dir.copy(this.thrustDirection_world).normalize();
+        else dir.copy(this.v_mps).normalize(); // fallback
+        break;
     }
+
     return dir.multiplyScalar(T);
   }
+
 
   // helper: mass flow rate given current throttle
   public massFlowRate(): number {
