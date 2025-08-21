@@ -4,6 +4,8 @@ import { Spacecraft } from "../objects/Spacecraft";
 import { computeDragAccel } from "../physics/Drag";
 import type { Atmosphere } from "../objects/Atmosphere";
 import type { Earth } from "../objects/Earth";
+import { computeOrbitElements, formatDistanceKm, formatSmaKm, formatPeriod } from "../physics/orbitTools";
+import { G } from "../physics/constants";
 
 export class SpacecraftGUI {
   public gui: GUI;
@@ -32,6 +34,8 @@ export class SpacecraftGUI {
     sampleRate: 50,
     maxPoints: 5000,
   };
+
+  private orbitState = { sma: "—", ecc: "—", rp: "—", ra: "—", period: "—" };
 
   constructor(spacecraft: Spacecraft, atmosphere: Atmosphere, earth: Earth) {
     this.spacecraft = spacecraft;
@@ -81,6 +85,14 @@ export class SpacecraftGUI {
         this.spacecraft.trail.sampleRate = value;
       });
     trail.add(this.spacecraft.trail, "maxPoints", 1, 10_000).step(1).name("Max Points");
+
+    // Orbit analysis folder
+    const orbitFolder = this.gui.addFolder("Orbit (w.r.t. Earth)");
+    orbitFolder.add(this.orbitState, "sma").name("Semi-major axis (km)");
+    orbitFolder.add(this.orbitState, "ecc").name("Eccentricity");
+    orbitFolder.add(this.orbitState, "rp").name("Perigee (km)");
+    orbitFolder.add(this.orbitState, "ra").name("Apogee (km)");
+    orbitFolder.add(this.orbitState, "period").name("Period");
 
     // Telemetry (read-only, updates each frame)
     const telemetryFolder = this.gui.addFolder("Telemetry");
@@ -139,6 +151,18 @@ export class SpacecraftGUI {
     this.telemetry.acc = `(${this.spacecraft.a_mps2.x.toFixed(4)}, ${this.spacecraft.a_mps2.y.toFixed(4)}, ${this.spacecraft.a_mps2.z.toFixed(4)})`;
     
     this.defaults.mass = this.spacecraft.mass;
+
+    // orbit elements relative to Earth
+    const rRel = this.spacecraft.r_m.clone().sub(this.earth.r_m);
+    const vRel = this.spacecraft.v_mps.clone().sub(this.earth.v_mps);
+    const mu = G * this.earth.mass;
+    const elements = computeOrbitElements(rRel, vRel, mu);
+
+    this.orbitState.sma = elements.sma ? formatSmaKm(elements.sma) : (elements.isBound ? "—" : "Unbound");
+    this.orbitState.ecc = `${elements.ecc.toFixed(6)}`;
+    this.orbitState.rp = formatDistanceKm(elements.rp);
+    this.orbitState.ra = formatDistanceKm(elements.ra);
+    this.orbitState.period = formatPeriod(elements.period);
 
 
     const h = this.spacecraft.r_m.distanceTo(this.earth.r_m) - this.earth.radius;
