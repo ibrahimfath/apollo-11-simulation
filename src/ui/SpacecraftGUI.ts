@@ -102,7 +102,7 @@ export class SpacecraftGUI {
     thrust.add(this.spacecraft, "isp_s", 0, 1000).name("ISP (s)");
 
     // Direction mode selector
-    thrust.add(this.spacecraft, "thrustMode", ["prograde", "retrograde", "radial", "normal", "custom"])
+    thrust.add(this.spacecraft, "thrustMode", ["prograde", "retrograde", "radial_out", "radial_in", "normal_plus", "normal_minus", "custom"])
       .name("Direction Mode");
     
     // Optional: allow custom vector if mode = custom
@@ -116,6 +116,15 @@ export class SpacecraftGUI {
     thrust.add(customDir, "z", -1, 1, 0.01).name("Custom Z").onChange(() => {
       this.spacecraft.thrustDirection_world = new THREE.Vector3(customDir.x, customDir.y, customDir.z).normalize();
     });
+
+    // Burn helpers
+    const burns = this.gui.addFolder("Impulse Burns");
+    burns.add({ prograde: () => this.spacecraft.burnPrograde(100) }, "prograde").name("Δv +100 m/s Prograde");
+    burns.add({ retro:   () => this.spacecraft.burnRetrograde(100) }, "retro").name("Δv -100 m/s Retrograde");
+    burns.add({ radialOut: () => this.spacecraft.burnRadialOut(100, this.earth.r_m) }, "radialOut").name("Δv Radial Out");
+    burns.add({ radialIn:  () => this.spacecraft.burnRadialIn(100, this.earth.r_m) }, "radialIn").name("Δv Radial In");
+    burns.add({ normal:    () => this.spacecraft.burnNormal(100) }, "normal").name("Δv Normal");
+    burns.add({ antiNormal:() => this.spacecraft.burnAntiNormal(100) }, "antiNormal").name("Δv Anti-Normal");
 
     // Reset button
     this.gui.add({ reset: () => this.reset() }, "reset").name("Reset Spacecraft");

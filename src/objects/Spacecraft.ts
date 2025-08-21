@@ -11,7 +11,7 @@ export interface SpacecraftProps {
   color?: number | string;
 }
 
-export type ThrustMode = "prograde" | "retrograde" | "radial" | "normal" | "custom";
+export type ThrustMode = "prograde" | "retrograde" | "radial_out" | "radial_in" | "normal_plus" | "normal_minus" | "custom";
 
 export class Spacecraft {
   public group: THREE.Group;
@@ -134,6 +134,48 @@ export class Spacecraft {
     this.fuelMass -= dm; // burn the propellant
   }
 
+  // --- Impulse Burn Helpers ---
+
+  /** Burn prograde by Δv (m/s) */
+  public burnPrograde(dv: number) {
+    if (this.v_mps.lengthSq() < 1e-9) return; // avoid NaN if stationary
+    const dir = this.v_mps.clone().normalize();
+    this.applyDeltaV(dir.multiplyScalar(dv));
+  }
+
+  /** Burn retrograde by Δv (m/s) */
+  public burnRetrograde(dv: number) {
+    if (this.v_mps.lengthSq() < 1e-9) return;
+    const dir = this.v_mps.clone().normalize().negate();
+    this.applyDeltaV(dir.multiplyScalar(dv));
+  }
+
+  /** Burn radial-out (away from Earth center) */
+  public burnRadialOut(dv: number, earthPos: THREE.Vector3) {
+    const dir = this.r_m.clone().sub(earthPos).normalize();
+    this.applyDeltaV(dir.multiplyScalar(dv));
+  }
+
+  /** Burn radial-in (toward Earth center) */
+  public burnRadialIn(dv: number, earthPos: THREE.Vector3) {
+    const dir = earthPos.clone().sub(this.r_m).normalize();
+    this.applyDeltaV(dir.multiplyScalar(dv));
+  }
+
+  /** Burn normal (out of orbital plane) */
+  public burnNormal(dv: number) {
+    // normal = r × v (angular momentum direction)
+    const h = new THREE.Vector3().crossVectors(this.r_m, this.v_mps).normalize();
+    this.applyDeltaV(h.multiplyScalar(dv));
+  }
+
+  /** Burn anti-normal (opposite orbital plane) */
+  public burnAntiNormal(dv: number) {
+    const h = new THREE.Vector3().crossVectors(this.r_m, this.v_mps).normalize().negate();
+    this.applyDeltaV(h.multiplyScalar(dv));
+  }
+
+
   // call to compute thrust vector in world frame
   public getThrustVectorWorld(): THREE.Vector3 {
     if (!this.engineOn || this.throttle <= 0 || this.T_max_N <= 0) return new THREE.Vector3();
@@ -148,11 +190,17 @@ export class Spacecraft {
       case "retrograde":
         dir.copy(this.v_mps).normalize().multiplyScalar(-1);
         break;
-      case "radial":
+      case "radial_out":
         dir.copy(this.r_m).normalize();
         break;
-      case "normal":
+      case "radial_in":
+        dir.copy(this.r_m).normalize().multiplyScalar(-1);
+        break;
+      case "normal_plus":
         dir.crossVectors(this.r_m, this.v_mps).normalize(); // orbital plane normal
+        break;
+      case "normal_minus":
+        dir.crossVectors(this.r_m, this.v_mps).normalize().multiplyScalar(-1); // orbital plane normal
         break;
       case "custom":
         if (this.thrustDirection_world) dir.copy(this.thrustDirection_world).normalize();
