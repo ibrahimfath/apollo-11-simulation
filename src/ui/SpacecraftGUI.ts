@@ -25,6 +25,7 @@ export class SpacecraftGUI {
   };
 
   private defaults = {
+    mass: 137_000,
     dryMass: 13_000,
     fuelMass: 120_000,
     radius: 10_000,
@@ -63,6 +64,7 @@ export class SpacecraftGUI {
   private setupControls() {
     // General properties
     const general = this.gui.addFolder("General");
+    general.add(this.spacecraft, "mass").name("Mass (kg)");
     general.add(this.spacecraft, "dryMass", 1000, 50_000).name("Dry Mass (kg)");
     general.add(this.spacecraft, "fuelMass", 0, 200_000).name("Fuel Mass (kg)");
     general.add(this.spacecraft, "radius", 0, 100_000).name("Radius (m)").onChange((value: number) => {
@@ -126,8 +128,9 @@ export class SpacecraftGUI {
     this.telemetry.pos = `(${this.spacecraft.r_m.x.toFixed(2)}, ${this.spacecraft.r_m.y.toFixed(2)}, ${this.spacecraft.r_m.z.toFixed(2)})`;
     this.telemetry.vel = `(${this.spacecraft.v_mps.x.toFixed(2)}, ${this.spacecraft.v_mps.y.toFixed(2)}, ${this.spacecraft.v_mps.z.toFixed(2)})`;
     this.telemetry.acc = `(${this.spacecraft.a_mps2.x.toFixed(4)}, ${this.spacecraft.a_mps2.y.toFixed(4)}, ${this.spacecraft.a_mps2.z.toFixed(4)})`;
+    
+    this.defaults.mass = this.spacecraft.mass;
 
-    if (!this.spacecraft) return;
 
     const h = this.spacecraft.r_m.distanceTo(this.earth.r_m) - this.earth.radius;
     const rho = this.atmosphere.densityAtAltitude(h);
