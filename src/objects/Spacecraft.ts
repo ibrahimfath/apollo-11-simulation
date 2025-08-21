@@ -29,8 +29,12 @@ export class Spacecraft {
   public a_mps2 = new THREE.Vector3(); // acceleration (m/s^2) – for display
 
   //engine:
-  public Isp_s: number;       // specific impulse (s)
-  public maxThrustN: number;  // nominal engine thrust for future finite burns
+  public isp_s: number;       // specific impulse (s)
+  public T_max_N: number;      // maximum engine thrust (N)
+  public throttle: number;     // 0..1
+  public engineOn: boolean;
+  public thrustDirection_world: THREE.Vector3 | null; // unit vector; null = use velocity direction (prograde)
+
 
   constructor(props: SpacecraftProps) {
     this.scalePerUnit = 1_000_000;
@@ -47,10 +51,14 @@ export class Spacecraft {
     markForBloom(this.mesh);
     this.group.add(this.mesh);
 
-    this.trail = new OrbitTrail(0xc8fb5b, 50, 5000, 0.01);
+    this.trail = new OrbitTrail(0x00ffcc, 50, 5000, 0.01);
 
-    this.Isp_s = 320;         // e.g., ~320 s (placeholder)
-    this.maxThrustN = 100_000; // ~100 kN (placeholder)
+    this.isp_s = 320;         // e.g., ~320 s (placeholder)
+    this.T_max_N = 0; // default 0 (engines off). Set to a real value when you add engines.
+    this.throttle = 0;
+    this.engineOn = false;
+    this.thrustDirection_world = null; // if null use prograde (v) as default when engineOn
+
 
 
   }
@@ -104,7 +112,7 @@ export class Spacecraft {
     const dv = dvWorld.length();
     if (dv <= 0) return;
 
-    const Isp = IspOverride ?? this.Isp_s;
+    const Isp = IspOverride ?? this.isp_s;
     const m0 = this.mass;
     if (m0 <= 0 || this.fuelMass <= 0) return;
 
@@ -122,6 +130,32 @@ export class Spacecraft {
     const dir = dvWorld.clone().normalize();
     this.v_mps.addScaledVector(dir, dvEff);
     this.fuelMass -= dm; // burn the propellant
+  }
+
+  // call to compute thrust vector in world frame
+  public getThrustVectorWorld(): THREE.Vector3 {
+    if (!this.engineOn || this.throttle <= 0 || this.T_max_N <= 0) return new THREE.Vector3(); 
+    const T = this.T_max_N * this.throttle;
+    // direction:
+    let dir = new THREE.Vector3();
+    if (this.thrustDirection_world && this.thrustDirection_world.lengthSq() > 1e-9) {
+      dir.copy(this.thrustDirection_world).normalize();
+    } else {
+      // fallback to prograde (if velocity small, use radial out)
+      if (this.v_mps.lengthSq() > 1e-9) {
+        dir.copy(this.v_mps).normalize();
+      } else {
+        dir.copy(this.r_m).normalize();
+      }
+    }
+    return dir.multiplyScalar(T);
+  }
+
+  // helper: mass flow rate given current throttle
+  public massFlowRate(): number {
+    if (!this.engineOn || this.throttle <= 0 || this.isp_s <= 0) return 0;
+    const T = this.T_max_N * this.throttle;
+    return -T / (this.isp_s * g0); // dm/dt (negative)
   }
 
 }

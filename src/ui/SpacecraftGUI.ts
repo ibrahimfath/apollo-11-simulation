@@ -3,7 +3,6 @@ import { Spacecraft } from "../objects/Spacecraft";
 import { computeDragAccel } from "../physics/Drag";
 import type { Atmosphere } from "../objects/Atmosphere";
 import type { Earth } from "../objects/Earth";
-import { prograde } from "../physics/guidanceVectors";
 
 export class SpacecraftGUI {
   public gui: GUI;
@@ -69,11 +68,6 @@ export class SpacecraftGUI {
       this.spacecraft.setRadius(value);
     });
 
-    general.add(this.spacecraft, "Isp_s", 0, 1000).name("delta v").onChange((value: number) => {
-      const dir = prograde(this.spacecraft.r_m, this.spacecraft.v_mps);
-      this.spacecraft.applyDeltaV(dir.multiplyScalar(value));
-    })
-
     // Orbit Trail
     const trail = this.gui.addFolder("Orbit Trail");
     trail.add(this.spacecraft.trail, "sampleRate", 1, 500)
@@ -109,7 +103,7 @@ export class SpacecraftGUI {
     this.telemetry.pos = `(${this.spacecraft.r_m.x.toFixed(2)}, ${this.spacecraft.r_m.y.toFixed(2)}, ${this.spacecraft.r_m.z.toFixed(2)})`;
     this.telemetry.vel = `(${this.spacecraft.v_mps.x.toFixed(2)}, ${this.spacecraft.v_mps.y.toFixed(2)}, ${this.spacecraft.v_mps.z.toFixed(2)})`;
     this.telemetry.acc = `(${this.spacecraft.a_mps2.x.toFixed(4)}, ${this.spacecraft.a_mps2.y.toFixed(4)}, ${this.spacecraft.a_mps2.z.toFixed(4)})`;
-    
+
     if (!this.spacecraft) return;
 
     const h = this.spacecraft.r_m.distanceTo(this.earth.r_m) - this.earth.radius;
