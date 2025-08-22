@@ -50,6 +50,9 @@ const moonPos  = new THREE.Vector3( (mEarth / (mEarth + mMoon)) * r, 0, 0);
 // circular orbit speed for Moon around Earth (approx)
 const vMoon = Math.sqrt(G * mEarth / r); // ~1022 m/s
 // set directions: velocity perpendicular to position vector -> along +Y
+// ?Momentum formula: 
+// *momentum = mass × velocity
+// !To conserve momentum, Earth must move slower than Moon (Earth's mass is much greater than Moon's)
 const earthVel = new THREE.Vector3(0, -vMoon * (mMoon / mEarth), 0); // small opposite velocity
 const moonVel  = new THREE.Vector3(0, vMoon, 0);
 
