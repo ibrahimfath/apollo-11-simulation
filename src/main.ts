@@ -15,6 +15,7 @@ import { createBloomPipeline } from "./visualization/bloom";
 import { Spacecraft } from "./objects/Spacecraft";
 import { SpacecraftPropagatorRK4 } from "./physics/SpacecraftPropagatorRK4";
 import { SpacecraftGUI } from "./ui/SpacecraftGUI";
+import { HohmannTransfer } from "./physics/HohmannTransfer";
 
 
 const { scene, camera, renderer } = createScene();
@@ -54,6 +55,7 @@ const vMoon = Math.sqrt(G * mEarth / r); // ~1022 m/s
 // *momentum = mass × velocity
 // !To conserve momentum, Earth must move slower than Moon (Earth's mass is much greater than Moon's)
 const earthVel = new THREE.Vector3(0, -vMoon * (mMoon / mEarth), 0); // small opposite velocity
+// Align Moon's velocity with the same orbital plane (Y-axis) for consistent barycentric motion
 const moonVel  = new THREE.Vector3(0, vMoon, 0);
 
 // set initial physics state
@@ -79,7 +81,8 @@ const muEarth = G * earth.mass;
 const vCirc = Math.sqrt(muEarth / r0);
 
 const rVec = earth.r_m.clone().add(new THREE.Vector3(r0, 0, 0));
-const vVec = earth.v_mps.clone().add(new THREE.Vector3(0, 0, vCirc));
+// Place spacecraft in Earth's orbital plane (XY) for coplanar Hohmann transfer
+const vVec = earth.v_mps.clone().add(new THREE.Vector3(0, vCirc, 0));
 spacecraft.setInitialState(rVec, vVec);
 
 // RK4 propagator for spacecraft under Earth gravity (add Moon later)
@@ -96,8 +99,10 @@ let last = performance.now();
 const bary = new Barycenter(earth, moon);
 scene.add(bary.marker);
 
+const hohmannTransfer = new HohmannTransfer(earth, moon, spacecraft);
+
 const gui = new GuiManager(earth, moon, sun, time, bary);
-const spacecraftUI = new SpacecraftGUI(spacecraft, earth.atmosphere, earth);
+const spacecraftUI = new SpacecraftGUI(spacecraft, earth.atmosphere, earth, hohmannTransfer);
 
 function animate() {
   requestAnimationFrame(animate);
@@ -115,6 +120,7 @@ function animate() {
 
   earth.update(dt);
   moon.update(dt);
+  hohmannTransfer.update(dt);
 
   bary.update();
 

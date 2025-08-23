@@ -6,12 +6,14 @@ import type { Atmosphere } from "../objects/Atmosphere";
 import type { Earth } from "../objects/Earth";
 import { computeOrbitElements, formatDistanceKm, formatSmaKm, formatPeriod } from "../physics/orbitTools";
 import { G } from "../physics/constants";
+import { HohmannTransfer } from "../physics/HohmannTransfer";
 
 export class SpacecraftGUI {
   public gui: GUI;
   private spacecraft: Spacecraft;
   private atmosphere: Atmosphere;
   private earth: Earth
+  private hohmannTransfer: HohmannTransfer;
 
   // state object for telemetry display
   private telemetry = {
@@ -26,6 +28,11 @@ export class SpacecraftGUI {
     aDrag: "0",
   };
 
+  private hohmannState = {
+    transferTime: "0",
+    distanceToMoon: "0",
+  };
+
   private defaults = {
     mass: 137_000,
     dryMass: 13_000,
@@ -37,11 +44,12 @@ export class SpacecraftGUI {
 
   private orbitState = { sma: "—", ecc: "—", rp: "—", ra: "—", period: "—" };
 
-  constructor(spacecraft: Spacecraft, atmosphere: Atmosphere, earth: Earth) {
+  constructor(spacecraft: Spacecraft, atmosphere: Atmosphere, earth: Earth, hohmannTransfer: HohmannTransfer) {
     this.spacecraft = spacecraft;
     this.atmosphere = atmosphere;
     this.earth = earth;
-
+    this.hohmannTransfer = hohmannTransfer;
+    
     this.gui = new GUI({
       width: 400,
       title: "Spacecraft Controls"
@@ -138,6 +146,17 @@ export class SpacecraftGUI {
     burns.add({ normal:    () => this.spacecraft.burnNormal(100) }, "normal").name("Δv Normal");
     burns.add({ antiNormal:() => this.spacecraft.burnAntiNormal(100) }, "antiNormal").name("Δv Anti-Normal");
 
+    // Hohmann Transfer
+    const hohmannFolder = this.gui.addFolder("Hohmann Transfer");
+    hohmannFolder.add(this.hohmannState, "distanceToMoon").name("Distance to Moon");
+    hohmannFolder.add(this.hohmannState, "transferTime").name("Transfer Time");
+    hohmannFolder.add(this.hohmannTransfer, "phase").name("Phase");
+    hohmannFolder.add(this.hohmannTransfer, "deltaV1").name("Δv1");
+    hohmannFolder.add(this.hohmannTransfer, "deltaV2").name("Δv2");
+    hohmannFolder.add(this.hohmannTransfer, "totalDeltaV").name("Total Δv");
+    hohmannFolder.add({ triggerFirst: () => this.hohmannTransfer.triggerFirstBurn() }, "triggerFirst").name("Trigger First Burn");
+    hohmannFolder.add({ triggerSecond: () => this.hohmannTransfer.triggerSecondBurn() }, "triggerSecond").name("Trigger Second Burn");
+
     // Reset button
     this.gui.add({ reset: () => this.reset() }, "reset").name("Reset Spacecraft");
 
@@ -167,6 +186,9 @@ export class SpacecraftGUI {
 
     const h = this.spacecraft.r_m.distanceTo(this.earth.r_m) - this.earth.radius;
     const rho = this.atmosphere.densityAtAltitude(h);
+
+    this.hohmannState.distanceToMoon = formatDistanceKm(this.hohmannTransfer.distanceToMoon);
+    this.hohmannState.transferTime = this.hohmannTransfer.formatTime();
 
     let aDragMag = 0;
     if (rho > 0) {
