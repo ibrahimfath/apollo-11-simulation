@@ -120,12 +120,12 @@ function animate() {
 
   earth.update(dt);
   moon.update(dt);
-  hohmannTransfer.update(dt);
-
+  
   bary.update();
-
+  
   scProp.stepWithSubsteps(dt, 30);
   spacecraft.update();
+  hohmannTransfer.update(dt);
   
   gui.updateAll();
   spacecraftUI.update();
