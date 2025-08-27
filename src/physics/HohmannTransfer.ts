@@ -22,7 +22,7 @@ export class HohmannTransfer {
     public deltaV2: number = 0; // second burn Δv (m/s)
     public totalDeltaV: number = 0; // total Δv (m/s)
     public transferTime: number = 0; // transfer time (s)
-    private theta: number = 0; // the required angle between spacecraft and moon to start the transfer (degrees)
+    private theta: number = 0; // the required angle between spacecraft and moon to start the transfer (radians)
     private lastRadialVelocity: number | null = null;
 
     public distanceToMoon: number = 0; // distance to moon for gui (m)
@@ -42,7 +42,7 @@ export class HohmannTransfer {
     private updateValues() {
         this.r1 = this.earth.r_m.distanceTo(this.spacecraft.r_m);
         this.r2 = this.earth.r_m.distanceTo(this.moon.r_m) + 100_000;
-        this.v1 = this.spacecraft.v_mps.length();
+        this.v1 = this.spacecraft.v_mps.clone().sub(this.earth.v_mps).length();
         this.v2 = Math.sqrt(this.moonMU / this.r0); // !mark
         this.semiMajorAxis = (this.r1 + this.r2) / 2;
         this.deltaV1 = Math.sqrt(this.earthMU * (2 / this.r1 - 1 / this.semiMajorAxis)) - this.v1;
@@ -78,13 +78,13 @@ export class HohmannTransfer {
         // Computes the angle between the vectors (Earth->Spacecraft) and (Earth->Moon)
         const r_sc = this.spacecraft.r_m.clone().sub(this.earth.r_m); // vector from Earth to spacecraft
         const r_moon = this.moon.r_m.clone().sub(this.earth.r_m);     // vector from Earth to moon
-
-        // Angle between the two vectors (in radians)
-        const angle = r_sc.angleTo(r_moon);
+        const vRel = this.spacecraft.v_mps.clone().sub(this.earth.v_mps);
+        const h = r_sc.clone().cross(vRel).normalize(); // orbit normal for sign
+        const angleSigned = Math.atan2(r_sc.clone().cross(r_moon).dot(h), r_sc.dot(r_moon)); // (-π, π]
 
         // Check if the angle is within a small threshold of the required phase angle (theta)
         const threshold = 0.01; // radians (~0.57 deg)
-        return Math.abs(angle - this.theta) < threshold;
+        return Math.abs(angleSigned - this.theta) < threshold;
     }
 
     /** Checks if the second burn should be triggered */
