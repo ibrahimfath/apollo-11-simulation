@@ -153,7 +153,6 @@ export class SpacecraftGUI {
     hohmannFolder.add(this.hohmannTransfer, "phase").name("Phase");
     hohmannFolder.add(this.hohmannTransfer, "deltaV1").name("Δv1");
     hohmannFolder.add(this.hohmannTransfer, "deltaV2").name("Δv2");
-    hohmannFolder.add(this.hohmannTransfer, "totalDeltaV").name("Total Δv");
     hohmannFolder.add({ triggerFirst: () => this.hohmannTransfer.triggerFirstBurn() }, "triggerFirst").name("Trigger First Burn");
     hohmannFolder.add({ triggerSecond: () => this.hohmannTransfer.triggerSecondBurn() }, "triggerSecond").name("Trigger Second Burn");
 
