@@ -10,7 +10,6 @@ export class HohmannTransfer {
     private earth: Earth;
     private moon: Moon;
     private spacecraft: Spacecraft;
-    private r0: number = 0; // initial distance between moon and spacecraft orbit (m)
     private r1: number = 0; // initial distance between earth and spacecraft (m)
     private r2: number = 0; // initial distance between earth and moon (m)
     private semiMajorAxis: number = 0; // semi-major axis of the transfer orbit (m)
@@ -24,29 +23,30 @@ export class HohmannTransfer {
     public transferTime: number = 0; // transfer time (s)
     private theta: number = 0; // the required angle between spacecraft and moon to start the transfer (radians)
     private lastVrMoon: number | null = null; // last velocity relative to moon (m/s)
+    private llo: number = 0; // low lunar orbit (m)
 
     public distanceToMoon: number = 0; // distance to moon for gui (m)
     
     // Transfer state
     public phase: TransferPhase = "waiting";
 
-    constructor(earth: Earth, moon: Moon, spacecraft: Spacecraft) {
+    constructor(earth: Earth, moon: Moon, spacecraft: Spacecraft, llo: number = 250) { // 250km: stable altitude
         this.earth = earth;
         this.moon = moon;
         this.spacecraft = spacecraft;
         this.earthMU = this.earth.mass * G;
         this.moonMU = this.moon.mass * G;
-        this.r0 = this.moon.radius + 40_000;
+        this.llo = llo * 1000;
     }
     
     private updateValues() {
         this.r1 = this.earth.r_m.distanceTo(this.spacecraft.r_m);
-        this.r2 = this.earth.r_m.distanceTo(this.moon.r_m) + 40_000;
+        this.r2 = this.earth.r_m.distanceTo(this.moon.r_m) - this.moon.radius - this.llo;
         this.v1 = this.spacecraft.v_mps.clone().sub(this.earth.v_mps).length();
-        this.v2 = Math.sqrt(this.moonMU / this.r0); // !mark
+        this.v2 = Math.sqrt(this.moonMU / this.r2); // !mark
         this.semiMajorAxis = (this.r1 + this.r2) / 2;
         this.deltaV1 = Math.sqrt(this.earthMU * (2 / this.r1 - 1 / this.semiMajorAxis)) - this.v1;
-        // deltaV2 will be computed at burn time from instantaneous Moon-relative state
+        this.deltaV2 = Math.sqrt(this.moonMU * (2 / this.r2 - 1 / this.semiMajorAxis)) - this.v2;
         this.totalDeltaV = this.deltaV1 + this.deltaV2;
         this.transferTime = Math.PI * Math.sqrt(Math.pow(this.semiMajorAxis, 3) / this.earthMU);
         this.theta = Math.PI - (2 * Math.PI * this.transferTime / this.moon.orbitPeriod);
@@ -141,18 +141,29 @@ export class HohmannTransfer {
         const r = rMoonRel.length();
         if (r > 0) {
             const targetSpeed = Math.sqrt(this.moonMU / r);
-            const dv = Math.max(0, vMoonRel.length() - targetSpeed);
+            const vRelMag = vMoonRel.length();
+            const dv = Math.max(0, vRelMag - targetSpeed);
             this.v2 = targetSpeed;
             this.deltaV2 = dv;
             this.totalDeltaV = this.deltaV1 + this.deltaV2;
+            // Apply retrograde relative to Moon, not inertial
+            if (dv > 0 && vRelMag > 0) {
+                const retroRelDir = vMoonRel.clone().normalize().negate();
+                this.spacecraft.applyDeltaV(retroRelDir.multiplyScalar(dv));
+            }
+        } else {
+            // Fallback: inertial retrograde if r invalid
+            this.spacecraft.burnRetrograde(this.deltaV2);
         }
-        this.spacecraft.burnRetrograde(this.deltaV2);
         this.phase = "second_burn_complete";
     }
 
     /** Update method called every frame */
     public update(deltaTime: number = 0) {
-        this.distanceToMoon = this.moon.r_m.distanceTo(this.spacecraft.r_m);
+        this.distanceToMoon = this.moon.r_m.distanceTo(this.spacecraft.r_m) - this.moon.radius;
+        if (this.phase === "transferring") {
+            this.transferTime -= deltaTime;
+        }
 
         if (this.shouldTriggerFirstBurn()) {
             console.log("First burn triggered");
