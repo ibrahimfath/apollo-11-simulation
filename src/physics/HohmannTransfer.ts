@@ -23,7 +23,7 @@ export class HohmannTransfer {
     public totalDeltaV: number = 0; // total Δv (m/s)
     public transferTime: number = 0; // transfer time (s)
     private theta: number = 0; // the required angle between spacecraft and moon to start the transfer (radians)
-    private lastVrMoon: number | null = null;
+    private lastVrMoon: number | null = null; // last velocity relative to moon (m/s)
 
     public distanceToMoon: number = 0; // distance to moon for gui (m)
     
