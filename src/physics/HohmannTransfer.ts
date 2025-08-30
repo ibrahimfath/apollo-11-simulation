@@ -80,7 +80,7 @@ export class HohmannTransfer {
         const r_moon = this.moon.r_m.clone().sub(this.earth.r_m);     // vector from Earth to moon
         const vRel = this.spacecraft.v_mps.clone().sub(this.earth.v_mps);
         const h = r_sc.clone().cross(vRel).normalize(); // orbit normal for sign
-        const angleSigned = Math.atan2(r_sc.clone().cross(r_moon).dot(h), r_sc.dot(r_moon)); // (-π, π]
+        const angleSigned = Math.atan2(r_sc.clone().cross(r_moon).dot(h) /** sine */, r_sc.dot(r_moon) /** cosine */); // (-π, π]
 
         // Check if the angle is within a small threshold of the required phase angle (theta)
         const threshold = 0.01; // radians (~0.57 deg)
