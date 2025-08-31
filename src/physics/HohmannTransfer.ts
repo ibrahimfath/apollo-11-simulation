@@ -94,32 +94,32 @@ export class HohmannTransfer {
         }
         
         // Moon-centric test (for capture burn)
-        const rMoonRel = this.spacecraft.r_m.clone().sub(this.moon.r_m);
-        const vMoonRel = this.spacecraft.v_mps.clone().sub(this.moon.v_mps);
+        const rMoonRel = this.spacecraft.r_m.clone().sub(this.moon.r_m); // vector from Moon to spacecraft
+        const vMoonRel = this.spacecraft.v_mps.clone().sub(this.moon.v_mps); // relative velocity between spacecraft and Moon
 
-        const r = rMoonRel.length();
+        const r = rMoonRel.length(); // distance between spacecraft and Moon
         if (r <= 0) return false;
 
-        const vrMoon = rMoonRel.dot(vMoonRel) / r;
+        const vrMoon = rMoonRel.dot(vMoonRel) / r; // relative velocity along the vector from Moon to spacecraft (how fast we're moving toward or away from the Moon)
 
         // Dynamic vr tolerance relative to current Moon-relative speed
         const vrTol = Math.max(1.0, 0.01 * vMoonRel.length()); // >= 1 m/s, ~1% of speed
-        const crossedPeri = this.lastVrMoon !== null && this.lastVrMoon < 0 && vrMoon >= 0; // -→+
+        const crossedPeri = this.lastVrMoon !== null && this.lastVrMoon < 0 && vrMoon >= 0; // -→+ (the spacecraft crossed the periapsis of its orbit)
 
         // Use Moon's approximate sphere of influence as a gate
-        const earthMoonDist = this.earth.r_m.distanceTo(this.moon.r_m); // m
+        const earthMoonDist = this.earth.r_m.distanceTo(this.moon.r_m); // distance between Earth and Moon (m)
         const soiMoon = earthMoonDist * Math.pow(this.moon.mass / this.earth.mass, 2/5);
-        const insideGate = r < soiMoon * 1.2; // slightly outside SOI to be lenient
+        const insideGate = r < soiMoon * 1.2; // slightly outside SOI to be lenient (1.2 is a leniency factor)
 
         this.lastVrMoon = vrMoon;
 
         // Trigger at periselene when within the gate; prefer sign-flip for robustness with large dt
-        const atPeriselene = insideGate && (crossedPeri || Math.abs(vrMoon) < vrTol);
+        const atPeriselene = insideGate && (crossedPeri || Math.abs(vrMoon) < vrTol); // if the spacecraft is within the gate and has crossed the periapsis of its orbit or the relative velocity is less than the tolerance
 
         // Pre-compute deltaV2 from instantaneous Moon-relative state for UI/consistency
         if (atPeriselene) {
-            this.v2 = Math.sqrt(this.moonMU / r);
-            this.deltaV2 = Math.max(0, vMoonRel.length() - this.v2);
+            this.v2 = Math.sqrt(this.moonMU / r); // the velocity of the spacecraft at the lunar orbit
+            this.deltaV2 = Math.max(0, vMoonRel.length() - this.v2); // the delta-v required to reach the lunar orbit
             this.totalDeltaV = this.deltaV1 + this.deltaV2;
         }
 
@@ -136,31 +136,31 @@ export class HohmannTransfer {
     /** Applies the second burn to the spacecraft */
     private applySecondBurn() {
         // Compute burn magnitude from current Moon-relative state (robust if called manually)
-        const rMoonRel = this.spacecraft.r_m.clone().sub(this.moon.r_m);
-        const vMoonRel = this.spacecraft.v_mps.clone().sub(this.moon.v_mps);
-        const r = rMoonRel.length();
+        const rMoonRel = this.spacecraft.r_m.clone().sub(this.moon.r_m); // vector from Moon to spacecraft
+        const vMoonRel = this.spacecraft.v_mps.clone().sub(this.moon.v_mps); // relative velocity between spacecraft and Moon
+        const r = rMoonRel.length(); // distance between spacecraft and Moon
         if (r > 0) {
-            const targetSpeed = Math.sqrt(this.moonMU / r);
-            const vRelMag = vMoonRel.length();
+            const targetSpeed = Math.sqrt(this.moonMU / r); // the velocity of the spacecraft at the lunar orbit
+            const vRelMag = vMoonRel.length(); // relative velocity magnitude
             const dv = Math.max(0, vRelMag - targetSpeed);
-            this.v2 = targetSpeed;
+            this.v2 = targetSpeed; // the velocity of the spacecraft at the lunar orbit
             this.deltaV2 = dv;
             this.totalDeltaV = this.deltaV1 + this.deltaV2;
             // Apply retrograde relative to Moon, not inertial
             if (dv > 0 && vRelMag > 0) {
-                const retroRelDir = vMoonRel.clone().normalize().negate();
+                const retroRelDir = vMoonRel.clone().normalize().negate(); // retrograde relative to Moon, not inertial
                 this.spacecraft.applyDeltaV(retroRelDir.multiplyScalar(dv));
             }
         } else {
             // Fallback: inertial retrograde if r invalid
-            this.spacecraft.burnRetrograde(this.deltaV2);
+            this.spacecraft.burnRetrograde(this.deltaV2); // apply retrograde burn
         }
         this.phase = "second_burn_complete";
     }
 
     /** Update method called every frame */
     public update(deltaTime: number = 0) {
-        this.distanceToMoon = this.moon.r_m.distanceTo(this.spacecraft.r_m) - this.moon.radius;
+        this.distanceToMoon = this.moon.r_m.distanceTo(this.spacecraft.r_m) - this.moon.radius; // distance to moon for gui
         if (this.phase === "transferring") {
             this.transferTime -= deltaTime;
         }
