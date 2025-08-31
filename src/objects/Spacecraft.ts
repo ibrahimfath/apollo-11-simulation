@@ -1,7 +1,8 @@
 import * as THREE from "three";
-import { markForBloom } from "../visualization/bloom";
+// import { markForBloom } from "../visualization/bloom";
 import { OrbitTrail } from "../visualization/OrbitTrail";
 import { g0 } from "../physics/constants";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 export interface SpacecraftProps {
   scalePerUnit?: number;
@@ -15,7 +16,7 @@ export type ThrustMode = "prograde" | "retrograde" | "radial_out" | "radial_in" 
 
 export class Spacecraft {
   public group: THREE.Group;
-  public mesh: THREE.Mesh;
+  // public mesh: THREE.Mesh;
   public trail: OrbitTrail;
   
 
@@ -44,14 +45,33 @@ export class Spacecraft {
     this.fuelMass = props.fuelMass ?? 120_000; // kg
     this.radius = props.radius ?? 10000; // meters (visual)
     this.baseRadius = this.radius;
-    const scaledRadius = this.radius / this.scalePerUnit;
+    // const scaledRadius = this.radius / this.scalePerUnit;
 
     this.group = new THREE.Group();
-    const geometry = new THREE.SphereGeometry(scaledRadius, 16, 12);
-    const material = new THREE.MeshStandardMaterial({ color: props.color ?? 0xff0000 });
-    this.mesh = new THREE.Mesh(geometry, material);
-    markForBloom(this.mesh);
-    this.group.add(this.mesh);
+
+    // const geometry = new THREE.SphereGeometry(scaledRadius, 16, 12);
+    // const material = new THREE.MeshStandardMaterial({ color: props.color ?? 0xff0000 });
+    // this.mesh = new THREE.Mesh(geometry, material);
+    // markForBloom(this.mesh);
+    // this.group.add(this.mesh);
+
+    const loader = new GLTFLoader();
+
+    loader.load(
+      "/models/saturn-v-3rd-stage.glb", // path to your model
+      (craft) => {
+        this.group.add(craft.scene);
+        craft.scene.position.set(0, 0, 0);
+        craft.scene.rotateX(90);
+        craft.scene.scale.set(0.001, 0.001, 0.001); // adjust scale if too big/small
+      },
+      (xhr) => {
+        console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+      },
+      (error) => {
+        console.error("Error loading model:", error);
+      }
+    );
 
     this.trail = new OrbitTrail(0x00ffcc, 50, 5000, 0.01);
 
@@ -89,7 +109,7 @@ export class Spacecraft {
     // Simple “point in velocity direction” visual
     if (this.v_mps.lengthSq() > 1e-6) {
       const fwd = this.v_mps.clone().normalize();
-      this.mesh.lookAt(this.group.position.clone().add(fwd));
+      this.group.lookAt(this.group.position.clone().add(fwd));
     }
   }
 

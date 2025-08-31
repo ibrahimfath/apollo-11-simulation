@@ -54,9 +54,9 @@ const vMoon = Math.sqrt(G * mEarth / r); // ~1022 m/s
 // ?Momentum formula: 
 // *momentum = mass × velocity
 // !To conserve momentum, Earth must move slower than Moon (Earth's mass is much greater than Moon's)
-const earthVel = new THREE.Vector3(0, -vMoon * (mMoon / mEarth), 0); // small opposite velocity
+const earthVel = new THREE.Vector3(0, 0, -vMoon * (mMoon / mEarth)); // small opposite velocity
 // Align Moon's velocity with the same orbital plane (Y-axis) for consistent barycentric motion
-const moonVel  = new THREE.Vector3(0, vMoon, 0);
+const moonVel  = new THREE.Vector3(0, 0, vMoon);
 
 // set initial physics state
 earth.setInitialState(earthPos, earthVel);
@@ -82,7 +82,7 @@ const vCirc = Math.sqrt(muEarth / r0);
 
 const rVec = earth.r_m.clone().add(new THREE.Vector3(r0, 0, 0));
 // Place spacecraft in Earth's orbital plane (XY) for coplanar Hohmann transfer
-const vVec = earth.v_mps.clone().add(new THREE.Vector3(0, vCirc, 0));
+const vVec = earth.v_mps.clone().add(new THREE.Vector3(0, 0, vCirc));
 spacecraft.setInitialState(rVec, vVec);
 
 // RK4 propagator for spacecraft under Earth gravity (add Moon later)
