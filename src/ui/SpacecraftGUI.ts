@@ -31,6 +31,7 @@ export class SpacecraftGUI {
   private hohmannState = {
     transferTime: "0",
     distanceToMoon: "0",
+    lowestDistanceToMoon: "0",
   };
 
   private defaults = {
@@ -150,12 +151,16 @@ export class SpacecraftGUI {
     const hohmannFolder = this.gui.addFolder("Hohmann Transfer");
     hohmannFolder.add(this.hohmannState, "distanceToMoon").name("Distance to Moon");
     hohmannFolder.add(this.hohmannState, "transferTime").name("Transfer Time");
+    hohmannFolder.add(this.hohmannState, "lowestDistanceToMoon").name("Lowest Distance to Moon");
     hohmannFolder.add(this.hohmannTransfer, "phase").name("Phase");
     hohmannFolder.add(this.hohmannTransfer, "deltaV1").name("Δv1");
     hohmannFolder.add(this.hohmannTransfer, "deltaV2").name("Δv2");
+    hohmannFolder.add(this.hohmannTransfer, "deltaV3").name("Δv3");
+    hohmannFolder.add(this.hohmannTransfer, "deltaV4").name("Δv4");
     hohmannFolder.add({ triggerFirst: () => this.hohmannTransfer.triggerFirstBurn() }, "triggerFirst").name("Trigger First Burn");
     hohmannFolder.add({ triggerSecond: () => this.hohmannTransfer.triggerSecondBurn() }, "triggerSecond").name("Trigger Second Burn");
-
+    hohmannFolder.add({ triggerThird: () => this.hohmannTransfer.triggerThirdBurn() }, "triggerThird").name("Trigger Third Burn");
+    hohmannFolder.add({ triggerFourth: () => this.hohmannTransfer.triggerFourthBurn() }, "triggerFourth").name("Trigger Fourth Burn");
     // Reset button
     this.gui.add({ reset: () => this.reset() }, "reset").name("Reset Spacecraft");
 
@@ -187,6 +192,7 @@ export class SpacecraftGUI {
     const rho = this.atmosphere.densityAtAltitude(h);
 
     this.hohmannState.distanceToMoon = formatDistanceKm(this.hohmannTransfer.distanceToMoon);
+    this.hohmannState.lowestDistanceToMoon = formatDistanceKm(this.hohmannTransfer.lowestDistanceToMoon);
     this.hohmannState.transferTime = this.hohmannTransfer.formatTime();
 
     let aDragMag = 0;

@@ -4,7 +4,7 @@ import { Earth } from "../objects/Earth";
 import { Moon } from "../objects/Moon";
 import { Spacecraft } from "../objects/Spacecraft";
 
-export type TransferPhase = "waiting" | "first_burn_complete" | "transferring" | "second_burn_complete" | "complete";
+export type TransferPhase = "waiting" | "first_burn_complete" | "transferring" | "second_burn_complete" | "third_burn_complete" | "fourth_burn_complete" | "complete";
 
 export class HohmannTransfer {
     private earth: Earth;
@@ -19,13 +19,22 @@ export class HohmannTransfer {
     private v2: number = 0; // velocity of the spacecraft at the lunar orbit (m/s)
     public deltaV1: number = 0; // first burn Δv (m/s)
     public deltaV2: number = 0; // second burn Δv (m/s)
+    public deltaV3: number = 0; // third burn Δv (m/s)
+    public deltaV4: number = 0; // fourth burn Δv (m/s)
     public totalDeltaV: number = 0; // total Δv (m/s)
     public transferTime: number = 0; // transfer time (s)
     private theta: number = 0; // the required angle between spacecraft and moon to start the transfer (radians)
     private lastVrMoon: number | null = null; // last velocity relative to moon (m/s)
     private llo: number = 0; // low lunar orbit (m)
+    private captureApoAltKm: number = 600; // desired apolune altitude after LOI-1 (km)
 
     public distanceToMoon: number = 0; // distance to moon for gui (m)
+    public lowestDistanceToMoon: number = Infinity; // lowest distance to moon for gui (m)
+    // Gating to keep 2nd and 3rd burns from happening back-to-back
+    private timeSinceSecond_s: number = Infinity;
+    private minWaitAfterSecond_s: number = 0;
+    private rAtSecond_m: number = 0;
+    private seenVrPositiveSinceSecond: boolean = false;
     
     // Transfer state
     public phase: TransferPhase = "waiting";
@@ -87,7 +96,7 @@ export class HohmannTransfer {
         return Math.abs(angleSigned - this.theta) < threshold;
     }
 
-    /** Checks if the second burn should be triggered */
+    /** Checks if the second burn (LOI-1 capture) should be triggered */
     private shouldTriggerSecondBurn(): boolean {
         if (this.phase !== "transferring") {
             return false;
@@ -102,8 +111,6 @@ export class HohmannTransfer {
 
         const vrMoon = rMoonRel.dot(vMoonRel) / r; // relative velocity along the vector from Moon to spacecraft (how fast we're moving toward or away from the Moon)
 
-        // Dynamic vr tolerance relative to current Moon-relative speed
-        const vrTol = Math.max(1.0, 0.01 * vMoonRel.length()); // >= 1 m/s, ~1% of speed
         const crossedPeri = this.lastVrMoon !== null && this.lastVrMoon < 0 && vrMoon >= 0; // -→+ (the spacecraft crossed the periapsis of its orbit)
 
         // Use Moon's approximate sphere of influence as a gate
@@ -113,13 +120,17 @@ export class HohmannTransfer {
 
         this.lastVrMoon = vrMoon;
 
-        // Trigger at periselene when within the gate; prefer sign-flip for robustness with large dt
-        const atPeriselene = insideGate && (crossedPeri || Math.abs(vrMoon) < vrTol); // if the spacecraft is within the gate and has crossed the periapsis of its orbit or the relative velocity is less than the tolerance
+        // Trigger strictly at periselene using sign flip to avoid multi-burn in same step
+        const atPeriselene = insideGate && crossedPeri;
 
-        // Pre-compute deltaV2 from instantaneous Moon-relative state for UI/consistency
+        // Pre-compute deltaV2 (capture to target ellipse) for UI/consistency
         if (atPeriselene) {
-            this.v2 = Math.sqrt(this.moonMU / r); // the velocity of the spacecraft at the lunar orbit
-            this.deltaV2 = Math.max(0, vMoonRel.length() - this.v2); // the delta-v required to reach the lunar orbit
+            const rp = r; // current periapsis radius (we are at periselene)
+            const raTarget = this.moon.radius + this.captureApoAltKm * 1000 // desired apolune radius
+            const aTarget = 0.5 * (rp + raTarget); // semi-major axis of the target ellipse
+            const vPeriTarget = Math.sqrt(this.moonMU * (2 / rp - 1 / aTarget)); // circular velocity at the perilune
+            this.v2 = vPeriTarget;
+            this.deltaV2 = Math.max(0, vMoonRel.length() - vPeriTarget); // retrograde magnitude to capture to target ellipse
             this.totalDeltaV = this.deltaV1 + this.deltaV2;
         }
 
@@ -133,48 +144,175 @@ export class HohmannTransfer {
         this.phase = "first_burn_complete";
     }
 
-    /** Applies the second burn to the spacecraft */
+    /** Applies the second burn (LOI-1 capture to ellipse) to the spacecraft */
     private applySecondBurn() {
         // Compute burn magnitude from current Moon-relative state (robust if called manually)
         const rMoonRel = this.spacecraft.r_m.clone().sub(this.moon.r_m); // vector from Moon to spacecraft
         const vMoonRel = this.spacecraft.v_mps.clone().sub(this.moon.v_mps); // relative velocity between spacecraft and Moon
-        const r = rMoonRel.length(); // distance between spacecraft and Moon
-        if (r > 0) {
-            const targetSpeed = Math.sqrt(this.moonMU / r); // the velocity of the spacecraft at the lunar orbit
-            const vRelMag = vMoonRel.length(); // relative velocity magnitude
-            const dv = Math.max(0, vRelMag - targetSpeed);
-            this.v2 = targetSpeed; // the velocity of the spacecraft at the lunar orbit
-            this.deltaV2 = dv;
-            this.totalDeltaV = this.deltaV1 + this.deltaV2;
-            // Apply retrograde relative to Moon, not inertial
-            if (dv > 0 && vRelMag > 0) {
-                const retroRelDir = vMoonRel.clone().normalize().negate(); // retrograde relative to Moon, not inertial
-                this.spacecraft.applyDeltaV(retroRelDir.multiplyScalar(dv));
-            }
-        } else {
-            // Fallback: inertial retrograde if r invalid
-            this.spacecraft.burnRetrograde(this.deltaV2); // apply retrograde burn
+        const r = rMoonRel.length(); // distance between spacecraft and Moon (m)
+        const rp = r; // current periapsis
+        const raTarget = this.moon.radius + this.captureApoAltKm * 1000; // desired apolune radius
+        const aTarget = 0.5 * (rp + raTarget); // semi-major axis of the target ellipse
+        const vPeriTarget = Math.sqrt(this.moonMU * (2 / rp - 1 / aTarget));
+        const vRelMag = vMoonRel.length(); // relative velocity magnitude between spacecraft and Moon
+        const dv = Math.max(0, vRelMag - vPeriTarget); // magnitude of the burn
+        this.v2 = vPeriTarget; // velocity at the perilune
+        this.deltaV2 = dv; // magnitude of the burn
+        this.totalDeltaV = this.deltaV1 + this.deltaV2;
+        // Apply retrograde relative to Moon, not inertial
+        if (dv > 0 && vRelMag > 0) { // if the burn is positive and the relative velocity is positive
+            const retroRelDir = vMoonRel.clone().normalize().negate(); // retrograde relative to Moon, not inertial
+            this.spacecraft.applyDeltaV(retroRelDir.multiplyScalar(dv));
         }
         this.phase = "second_burn_complete";
+        // Initialize gating for 3rd burn
+        this.timeSinceSecond_s = 0;
+        this.rAtSecond_m = r;
+        this.seenVrPositiveSinceSecond = false;
+        // Estimate period of the post-capture ellipse and set a min wait to avoid immediate apolune trigger
+        const aEll = 0.5 * (rp + raTarget);
+        const T = 2 * Math.PI * Math.sqrt(Math.pow(aEll, 3) / this.moonMU);
+        this.minWaitAfterSecond_s = 0.3 * T; // wait ~30% of an orbit before allowing apolune trigger
+    }
+
+    /** Checks if the third burn (apolune tweak to set periapsis = R_moon + LLO) should be triggered */
+    private shouldTriggerThirdBurn(): boolean {
+        if (this.phase !== "second_burn_complete") {
+            return false;
+        }
+        // Detect next apolune after LOI-1
+        const rMoonRel = this.spacecraft.r_m.clone().sub(this.moon.r_m); // vector from Moon to spacecraft
+        const vMoonRel = this.spacecraft.v_mps.clone().sub(this.moon.v_mps); // relative velocity between spacecraft and Moon
+        const r = rMoonRel.length(); // distance between spacecraft and Moon
+        if (r <= 0) return false;
+        const vrMoon = rMoonRel.dot(vMoonRel) / r; // relative velocity along the vector from Moon to spacecraft
+        // Always track outbound and lastVr even if gating not yet satisfied
+        if (vrMoon > 0) this.seenVrPositiveSinceSecond = true;
+        const lastVr = this.lastVrMoon;
+        this.lastVrMoon = vrMoon; // update memory each frame
+
+        // SOI gate
+        const earthMoonDist = this.earth.r_m.distanceTo(this.moon.r_m); // distance between Earth and Moon (m)
+        const soiMoon = earthMoonDist * Math.pow(this.moon.mass / this.earth.mass, 2/5);
+        const insideGate = r < soiMoon * 1.2; // slightly outside SOI to be lenient (1.2 is a leniency factor)
+
+        // Apolune detection with small window, plus sign flip when it happens
+        const speedRel = vMoonRel.length();
+        const vrTol = Math.max(0.5, 0.005 * speedRel); // >=0.5 m/s or ~0.5% of speed
+        const crossedApo = lastVr !== null && lastVr > 0 && vrMoon <= 0; // +→-
+        const nearApo = Math.abs(vrMoon) < vrTol;
+
+        // Gating: require time elapsed, outbound observed, and radius growth margin
+        const enoughTime = this.timeSinceSecond_s >= this.minWaitAfterSecond_s;
+        const outboundSeen = this.seenVrPositiveSinceSecond;
+        const rMargin = Math.max(5000, 0.1 * this.llo); // at least 5 km or 10% of LLO
+        const grownEnough = r >= this.rAtSecond_m + rMargin;
+
+        const atApolune = insideGate && enoughTime && outboundSeen && grownEnough && (crossedApo || nearApo);
+        if (atApolune) {
+            // Pre-compute Δv3 to change periapsis to target LLO while at current apolune radius r
+            const ra = r; // current apolune radius
+            const rpTarget = this.moon.radius + this.llo; // desired periapsis radius
+            const aTarget = 0.5 * (ra + rpTarget); // semi-major axis of the target ellipse
+            const vApoTarget = Math.sqrt(this.moonMU * (2 / ra - 1 / aTarget)); // circular velocity at the apolune
+            const vRelMag = vMoonRel.length(); // relative velocity magnitude between spacecraft and Moon
+            this.deltaV3 = Math.abs(vRelMag - vApoTarget);
+        }
+        return atApolune;
+    }
+
+    /** Applies the third burn at apolune to set periapsis = R_moon + LLO */
+    private applyThirdBurn() {
+        const rMoonRel = this.spacecraft.r_m.clone().sub(this.moon.r_m); // vector from Moon to spacecraft
+        const vMoonRel = this.spacecraft.v_mps.clone().sub(this.moon.v_mps); // relative velocity between spacecraft and Moon
+        const ra = rMoonRel.length(); // distance between spacecraft and Moon
+        const rpTarget = this.moon.radius + this.llo; // desired periapsis radius
+        const aTarget = 0.5 * (ra + rpTarget); // semi-major axis of the target ellipse
+        const vApoTarget = Math.sqrt(this.moonMU * (2 / ra - 1 / aTarget));
+        const vRelMag = vMoonRel.length(); // relative velocity magnitude between spacecraft and Moon
+        const dvMag = Math.abs(vRelMag - vApoTarget);
+        this.deltaV3 = dvMag; // magnitude of the burn
+        this.totalDeltaV = this.deltaV1 + this.deltaV2 + this.deltaV3;
+        if (dvMag > 0 && vRelMag > 0) {
+            const dir = vMoonRel.clone().normalize(); // direction of the relative velocity
+            // If current speed is higher than target, burn retrograde; else prograde
+            const burnDir = (vRelMag > vApoTarget) ? dir.clone().negate() : dir; // retrograde if current speed is higher than target, else prograde
+            this.spacecraft.applyDeltaV(burnDir.multiplyScalar(dvMag));
+        }
+        this.phase = "third_burn_complete";
+    }
+
+    /** Checks if the fourth burn (final circularization at perilune to LLO) should be triggered */
+    private shouldTriggerFourthBurn(): boolean {
+        if (this.phase !== "third_burn_complete") {
+            return false;
+        }
+        // Detect next periselene after apolune tweak
+        const rMoonRel = this.spacecraft.r_m.clone().sub(this.moon.r_m); // vector from Moon to spacecraft
+        const vMoonRel = this.spacecraft.v_mps.clone().sub(this.moon.v_mps); // relative velocity between spacecraft and Moon
+        const r = rMoonRel.length(); // distance between spacecraft and Moon
+        if (r <= 0) return false;
+        const vrMoon = rMoonRel.dot(vMoonRel) / r; // relative velocity along the vector from Moon to spacecraft
+
+        const earthMoonDist = this.earth.r_m.distanceTo(this.moon.r_m); // distance between Earth and Moon (m)
+        const soiMoon = earthMoonDist * Math.pow(this.moon.mass / this.earth.mass, 2/5);
+        const insideGate = r < soiMoon * 1.2; // slightly outside SOI to be lenient (1.2 is a leniency factor)
+        const crossedPeri = this.lastVrMoon !== null && this.lastVrMoon < 0 && vrMoon >= 0; // -→+ (the spacecraft crossed the periapsis of its orbit)
+        this.lastVrMoon = vrMoon;
+
+        const atPeriselene = insideGate && crossedPeri; // trigger strictly at periapsis using sign flip
+        if (atPeriselene) {
+            const vCirc = Math.sqrt(this.moonMU / r); // circular velocity at the perilune
+            this.deltaV4 = Math.max(0, vMoonRel.length() - vCirc);
+        }
+        return atPeriselene;
+    }
+
+    /** Applies the fourth burn: circularize at current perilune (targeting LLO) */
+    private applyFourthBurn() {
+        const rMoonRel = this.spacecraft.r_m.clone().sub(this.moon.r_m); // vector from Moon to spacecraft
+        const vMoonRel = this.spacecraft.v_mps.clone().sub(this.moon.v_mps);
+        const r = rMoonRel.length(); // distance between spacecraft and Moon
+        const vCirc = Math.sqrt(this.moonMU / r); // circular velocity at the perilune
+        const vRelMag = vMoonRel.length(); // relative velocity magnitude between spacecraft and Moon
+        const dv = Math.max(0, vRelMag - vCirc);
+        this.deltaV4 = dv;
+        this.totalDeltaV = this.deltaV1 + this.deltaV2 + this.deltaV3 + this.deltaV4;
+        if (dv > 0 && vRelMag > 0) {
+            const retroRelDir = vMoonRel.clone().normalize().negate(); // retrograde relative to Moon, not inertial
+            this.spacecraft.applyDeltaV(retroRelDir.multiplyScalar(dv));
+        }
+        this.phase = "fourth_burn_complete";
     }
 
     /** Update method called every frame */
     public update(deltaTime: number = 0) {
-        this.distanceToMoon = this.moon.r_m.distanceTo(this.spacecraft.r_m) - this.moon.radius; // distance to moon for gui
-        if (this.phase === "transferring") {
-            this.transferTime -= deltaTime;
+        this.distanceToMoon = this.moon.r_m.distanceTo(this.spacecraft.r_m) - this.moon.radius; // distance to moon for gui (m)
+        this.lowestDistanceToMoon = Math.min(this.lowestDistanceToMoon, this.distanceToMoon);
+        if (this.phase !== "waiting" && this.transferTime > 0) {
+            this.transferTime = Math.max(0, this.transferTime - deltaTime);
         }
+        if (this.timeSinceSecond_s < Infinity) this.timeSinceSecond_s += deltaTime;
 
         if (this.shouldTriggerFirstBurn()) {
-            console.log("First burn triggered");
             this.applyFirstBurn();
             this.phase = "transferring";
         }
 
         if (this.shouldTriggerSecondBurn()) {
-            console.log("Second burn triggered");
             this.applySecondBurn();
+            return; // ensure only one burn per frame
+        }
+
+        if (this.shouldTriggerThirdBurn()) {
+            this.applyThirdBurn();
+            return; // ensure only one burn per frame
+        }
+
+        if (this.shouldTriggerFourthBurn()) {
+            this.applyFourthBurn();
             this.phase = "complete";
+            return; // ensure only one burn per frame
         }
     }
 
@@ -187,6 +325,16 @@ export class HohmannTransfer {
     /** Manual trigger for second burn */
     public triggerSecondBurn() {
         this.applySecondBurn();
+    }
+
+    /** Manual trigger for third burn */
+    public triggerThirdBurn() {
+        this.applyThirdBurn();
+    }
+
+    /** Manual trigger for fourth burn */
+    public triggerFourthBurn() {
+        this.applyFourthBurn();
         this.phase = "complete";
     }
 }
