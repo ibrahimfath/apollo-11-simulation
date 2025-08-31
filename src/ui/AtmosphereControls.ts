@@ -65,6 +65,7 @@ export class AtmosphereControls {
       .name("hCutoff (m)")
       .step(10_000);
 
+    this.folder.close()
     // ---------------- RESET ----------------
     this.folder.add({ reset: () => this.reset() }, "reset").name("Reset Atmosphere");
   }

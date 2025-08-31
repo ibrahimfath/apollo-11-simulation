@@ -1,4 +1,5 @@
 import GUI from "lil-gui";
+import * as THREE from "three";
 import { Earth } from "../objects/Earth";
 import { Moon } from "../objects/Moon";
 import { Sun } from "../objects/Sun";
@@ -9,6 +10,10 @@ import { SunControls } from "./SunControls";
 import { TimeControls } from "./TimeControls";
 import { EarthMoonControls } from "./EarthMoonControls";
 import type { Barycenter } from "../physics/Barycenter";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { CameraControls } from "./CameraControlts";
+import type { Spacecraft } from "../objects/Spacecraft";
+
 
 export class GuiManager {
   public gui: GUI;
@@ -17,8 +22,9 @@ export class GuiManager {
   public moonUI: MoonControls;
   public sunUI: SunControls;
   public earthMoonUI: EarthMoonControls;
+  public cameraUI: CameraControls;
 
-  constructor(earth: Earth, moon: Moon, sun: Sun, time: TimeController, bary: Barycenter) {
+  constructor(earth: Earth, moon: Moon, sun: Sun, time: TimeController, bary: Barycenter, controls: OrbitControls, camera: THREE.PerspectiveCamera, spacecraft: Spacecraft) {
     this.gui = new GUI({
       width: 400,
       title: "Simulation Controls",
@@ -33,10 +39,32 @@ export class GuiManager {
     });
 
     this.timeUI = new TimeControls(this.gui, time);
+    this.timeUI.folder.close()
+
+    const targets = {
+      Earth: earth.group,
+      Moon: moon.group,
+      Spacecraft: spacecraft.group
+    };
+    this.cameraUI = new CameraControls({
+      camera: camera,
+      gui: this.gui,
+      controls: controls,
+      targets: targets
+    })
+    this.cameraUI.folder.close()
+
     this.earthUI = new EarthControls(this.gui, earth);
+    this.earthUI.folder.close()
+
     this.moonUI = new MoonControls(this.gui, moon);
+    this.moonUI.folder.close()
+
     this.earthMoonUI = new EarthMoonControls(this.gui, earth, moon, bary);
+    this.earthMoonUI.folder.close()
+
     this.sunUI = new SunControls(this.gui, sun);
+    this.sunUI.folder.close()
 
     this.gui.add({ resetAll: () => this.resetAll() }, "resetAll").name("Reset All");
 
@@ -54,5 +82,6 @@ export class GuiManager {
     this.earthUI.update();
     this.moonUI.update();
     this.earthMoonUI.update();
+    this.cameraUI.update();
   }
 }

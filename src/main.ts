@@ -101,7 +101,7 @@ scene.add(bary.marker);
 
 const hohmannTransfer = new HohmannTransfer(earth, moon, spacecraft);
 
-const gui = new GuiManager(earth, moon, sun, time, bary);
+const gui = new GuiManager(earth, moon, sun, time, bary, controls, camera, spacecraft);
 const spacecraftUI = new SpacecraftGUI(spacecraft, earth.atmosphere, earth, hohmannTransfer);
 
 function animate() {
