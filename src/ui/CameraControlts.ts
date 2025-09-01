@@ -12,6 +12,7 @@ export class CameraControls {
   private controls: OrbitControls;
   private sceneScale: number; // meters per scene unit (e.g., 1_000_000)
   private targets: CameraTargets;
+  private getVelocity: THREE.Vector3
 
   // runtime state
   private state = {
@@ -32,6 +33,7 @@ export class CameraControls {
     followOffsetKm: { x: 0, y: 50, z: 200 }, // offset in km (do not replace)
     followSmoothing: 0.12, // 0..1 (lerp factor)
     lookAtTarget: true,
+    velocityLock: false,  // when following spacecraft, point along velocity vector
   };
 
   private followTargetObj?: THREE.Object3D;
@@ -42,12 +44,14 @@ export class CameraControls {
     controls: OrbitControls,
     gui: GUI,
     sceneScale?: number, // meters per scene unit
-    targets?: CameraTargets
+    targets?: CameraTargets,
+    getVelocity: THREE.Vector3
   }) {
     this.camera = opts.camera;
     this.controls = opts.controls;
     this.sceneScale = opts.sceneScale ?? 1_000_000; // default same as your project
     this.targets = opts.targets ?? {};
+    this.getVelocity = opts.getVelocity;
 
     this.state.fov = this.camera.fov;
     this.state.near = this.camera.near;
@@ -125,6 +129,7 @@ export class CameraControls {
     });
     followFolder.add(s, "followSmoothing", 0, 1).name("Smoothing (0 snap)").step(0.01);
     followFolder.add(s, "lookAtTarget").name("Look at Target");
+    followFolder.add(s, "velocityLock").name("Velocity lock (look along vel)");
 
     this.folder.add({ reset: () => this.reset() }, "reset").name("Reset Camera");    
     
@@ -236,6 +241,7 @@ export class CameraControls {
     
     this.state.followSmoothing = 0.12;
     this.state.lookAtTarget = true;
+    this.state.velocityLock = false;
 
     // refresh ALL sliders/buttons, even nested ones
     this.folder.controllersRecursive().forEach(c => c.updateDisplay());
@@ -253,15 +259,38 @@ export class CameraControls {
         this.kmToSceneUnits(this.state.followOffsetKm.y),
         this.kmToSceneUnits(this.state.followOffsetKm.z)
       );
-      const desired = targetPos.clone().add(offsetScene);
+      
+      let lookAtPoint: THREE.Vector3 | undefined;
+      if (this.state.velocityLock) {
+        const vel = this.getVelocity;
+        if (vel && vel.lengthSq() > 1e-9) {
+          // point along velocity at a small offset from target
+          lookAtPoint = targetPos.clone().add(vel.clone().normalize().multiplyScalar(this.kmToSceneUnits(1000))); // point 1000 km ahead
+        }
+      }
+      // Statically treat offset as world-axis offset.
+      let desired = targetPos.clone().add(offsetScene);
+
       // smoothing: lerp from prevPos to desired
       const alpha = Math.max(0, Math.min(1, this.state.followSmoothing));
       this.prevPos.lerp(desired, alpha);
-      this.camera.position.copy(this.prevPos);
-      if (this.state.lookAtTarget) {
+
+      // apply shake if enabled and burning
+      let finalPos = this.prevPos.clone();
+      let finalLookAt = lookAtPoint ?? (this.state.lookAtTarget ? targetPos.clone() : undefined);
+
+      // copy to camera
+      this.camera.position.copy(finalPos);
+
+      // look direction: velocity lock priority, then lookAtTarget flag
+      if (finalLookAt) {
+        this.controls.target.copy(finalLookAt);
+        this.camera.lookAt(finalLookAt);
+      } else if (this.state.lookAtTarget) {
         this.controls.target.copy(targetPos);
         this.camera.lookAt(targetPos);
       }
+
       // update orbitcontrols internals so they don't snap
       this.controls.update();
       // reflect position into GUI sliders

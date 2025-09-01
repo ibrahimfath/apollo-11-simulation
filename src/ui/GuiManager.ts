@@ -46,11 +46,13 @@ export class GuiManager {
       Moon: moon.group,
       Spacecraft: spacecraft.group
     };
+    
     this.cameraUI = new CameraControls({
       camera: camera,
       gui: this.gui,
       controls: controls,
-      targets: targets
+      targets: targets,
+      getVelocity: spacecraft.v_mps.clone()
     })
     this.cameraUI.folder.close()
 
