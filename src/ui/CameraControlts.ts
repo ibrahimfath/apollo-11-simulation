@@ -18,7 +18,7 @@ export class CameraControls {
     fov: 75,
     near: 0.1,
     far: 20000,
-    posKm: { x: 0, y: 0, z: 20_000 }, // km
+    posKm: { x: 0, y: 0, z: 20_000 }, // km (note: do not replace this object later)
     lookAt: "None",
     enableRotate: true,
     enablePan: true,
@@ -29,7 +29,7 @@ export class CameraControls {
     autoRotate: false,
     autoRotateSpeed: 2.0,
     follow: "None" as string, // None | Earth | Moon | Spacecraft ...
-    followOffsetKm: { x: 0, y: 50, z: 200 }, // offset in km
+    followOffsetKm: { x: 0, y: 50, z: 200 }, // offset in km (do not replace)
     followSmoothing: 0.12, // 0..1 (lerp factor)
     lookAtTarget: true,
   };
@@ -83,7 +83,7 @@ export class CameraControls {
     const posFolder = this.folder.addFolder("Position (km)");
     posFolder.add(s.posKm, "x", -1_000_000, 1_000_000).name("X").onChange((v: number) => {
       s.posKm.x = v;
-      this.applyPosKm();
+      this.applyPosKm(); // apply as user moves slider
     });
     posFolder.add(s.posKm, "y", -1_000_000, 1_000_000).name("Y").onChange((v: number) => {
       s.posKm.y = v;
@@ -113,14 +113,15 @@ export class CameraControls {
       this.setFollowTarget(name);
     });
 
+    // NOTE: do not replace followOffsetKm object later; edit its fields
     followFolder.add(s.followOffsetKm, "x", -100_000, 100_000).name("Offset X (km)").onChange((value: number) => {
-      s.followOffsetKm.x = value
+      s.followOffsetKm.x = value;
     });
     followFolder.add(s.followOffsetKm, "y", -100_000, 100_000).name("Offset Y (km)").onChange((value: number) => {
-      s.followOffsetKm.y = value
+      s.followOffsetKm.y = value;
     });
     followFolder.add(s.followOffsetKm, "z", -100_000, 100_000).name("Offset Z (km)").onChange((value: number) => {
-      s.followOffsetKm.z = value
+      s.followOffsetKm.z = value;
     });
     followFolder.add(s, "followSmoothing", 0, 1).name("Smoothing (0 snap)").step(0.01);
     followFolder.add(s, "lookAtTarget").name("Look at Target");
@@ -161,43 +162,73 @@ export class CameraControls {
   }
 
   private resetPosition() {
-    this.state.posKm = { x: 0, y: 0, z: 20000 }; // example
+    // mutate existing object fields instead of replacing object reference
+    this.state.posKm.x = 0;
+    this.state.posKm.y = 0;
+    this.state.posKm.z = 20_000;
+
+    // apply visually
     this.applyPosKm();
+
+    // refresh GUI sliders to reflect the mutated values
+    this.folder.controllersRecursive().forEach(c => c.updateDisplay());
   }
 
 
   public reset() {
-  // reset camera to defaults
-  this.camera.fov = 75;
-  this.camera.near = 0.1;
-  this.camera.far = 20000;
-  this.camera.updateProjectionMatrix();
-  this.camera.position.set(0, 0, this.kmToSceneUnits(20000));
-  this.controls.target.set(0, 0, 0);
-  this.controls.update();
+    // reset camera to defaults
+    this.camera.fov = 75;
+    this.camera.near = 0.1;
+    this.camera.far = 20000;
+    this.camera.updateProjectionMatrix();
+    this.camera.position.set(0, 0, this.kmToSceneUnits(20000));
+    this.controls.target.set(0, 0, 0);
+    this.controls.update();
 
-  // reset GUI state
-  this.state.fov = 75;
-  this.state.near = 0.1;
-  this.state.far = 20000;
+    // reset GUI state — mutate fields (do NOT replace objects)
+    this.state.fov = 75;
+    this.state.near = 0.1;
+    this.state.far = 20000;
 
-  this.state.posKm.x = 0;
-  this.state.posKm.y = 0;
-  this.state.posKm.z = 20000;
+    this.state.posKm.x = 0;
+    this.state.posKm.y = 0;
+    this.state.posKm.z = 20000;
 
-  this.state.follow = "None";
+    this.state.enableRotate= true,
+    this.state.enablePan= true,
+    this.state.enableZoom= true,
+    this.state.rotateSpeed= 1.0,
+    this.state.zoomSpeed= 1.0,
+    this.state.panSpeed= 1.0,
+    this.state.autoRotate= false,
+    this.state.autoRotateSpeed= 2.0,
 
-  this.setFollowTarget("None");
+    this.controls.enableRotate = true;
+    this.controls.enablePan = true;
+    this.controls.enableZoom = true;
+    this.controls.rotateSpeed = 1.0;
+    this.controls.zoomSpeed = 1.0;
+    this.controls.panSpeed = 1.0;
+    this.controls.autoRotate = false;
+    this.controls.autoRotateSpeed = 2.0;
 
-  this.state.followOffsetKm.x = 0;
-  this.state.followOffsetKm.y = 50;
-  this.state.followOffsetKm.z = 200;
-  
-  this.state.followSmoothing = 0.12;
-  this.state.lookAtTarget = true;
 
-  // refresh ALL sliders/buttons, even nested ones
-  this.folder.controllersRecursive().forEach(c => c.updateDisplay());
+    // ensure the visual camera follows this numeric change
+    this.applyPosKm();
+
+    this.state.follow = "None";
+    this.setFollowTarget("None");
+
+    // mutate followOffsetKm fields instead of replacing object
+    this.state.followOffsetKm.x = 0;
+    this.state.followOffsetKm.y = 50;
+    this.state.followOffsetKm.z = 200;
+    
+    this.state.followSmoothing = 0.12;
+    this.state.lookAtTarget = true;
+
+    // refresh ALL sliders/buttons, even nested ones
+    this.folder.controllersRecursive().forEach(c => c.updateDisplay());
   }
 
 
