@@ -145,6 +145,16 @@ export class CameraControls {
       return;
     }
     this.followTargetObj = this.targets[name];
+    if (name == "Earth"){
+      this.state.followOffsetKm.z = 12000;
+    }
+    else if (name == "Moon"){
+      this.state.followOffsetKm.z = 9000;
+    }
+    else {
+      this.state.followOffsetKm.z =  200;
+    }
+    this.folder.controllersRecursive().forEach(c => c.updateDisplay());
     // set lookAt / optionally align controls.target
     if (this.followTargetObj && this.state.lookAtTarget) {
       this.controls.target.copy(this.followTargetObj.position);
