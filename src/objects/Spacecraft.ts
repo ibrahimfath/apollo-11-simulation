@@ -31,7 +31,6 @@ export class Spacecraft {
   public v_mps = new THREE.Vector3();  // velocity (m/s)
   public a_mps2 = new THREE.Vector3(); // acceleration (m/s^2) – for display
 
-  private angularVelocity: THREE.Vector3; 
 
   //engine:
   public isp_s: number;       // specific impulse (s)
@@ -72,16 +71,11 @@ export class Spacecraft {
     this.trail = new OrbitTrail(0x00ffcc, 50, 5000, 0.01);
 
     this.isp_s = 320;         // e.g., ~320 s (placeholder)
-    this.T_max_N = 0; // default 0 (engines off). Set to a real value when you add engines.
+    this.T_max_N = 1_000_000; // default 0 (engines off). Set to a real value when you add engines.
     this.throttle = 0;
     this.engineOn = false;
     this.thrustDirection_world = null; // if null use prograde (v) as default when engineOn
 
-    this.angularVelocity = new THREE.Vector3(
-      (Math.random() - 0.5) * 0.01, // small random angular velocity
-      (Math.random() - 0.5) * 0.01,
-      (Math.random() - 0.5) * 0.01
-    );
 
 
   }
@@ -123,19 +117,7 @@ export class Spacecraft {
         this.r_m.z * inv
       )
     ); 
-    // If engine is OFF → apply tumble
-    if (!this.engineOn) {
-      // Add small random wobble each frame
-      this.angularVelocity.add(new THREE.Vector3(
-        (Math.random() - 0.5) * 0.01,
-        (Math.random() - 0.5) * 0.01,
-        (Math.random() - 0.5) * 0.01
-      ));
-
-      const axis = this.angularVelocity.clone().normalize();
-      const angle = this.angularVelocity.length() * dt;
-      this.group.rotateOnAxis(axis, angle);
-    }
+    
   }
   
   // --- Impulsive Δv helper (world-frame) ---
