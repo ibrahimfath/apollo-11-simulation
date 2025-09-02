@@ -1,4 +1,3 @@
-import * as THREE from "three";
 import { G } from "./constants";
 import { Earth } from "../objects/Earth";
 import { Moon } from "../objects/Moon";

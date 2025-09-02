@@ -30,41 +30,40 @@ export class MoonControls {
   }
 
   private setupControls() {
-    const massCtrl = this.folder.add(this.moon, "mass", 1e10, 1e25).name("Mass");
-    const rotCtrl = this.folder.add(this.moon, "rotationPeriod", 1, 100)
+    this.folder.add(this.moon, "mass", 1e10, 1e25).name("Mass");
+    this.folder.add(this.moon, "rotationPeriod", 1, 100)
       .name("Rotation Period")
       .onChange((v: number) => {
         this.moon.rotationPeriod = v;
         this.moon.totalRotationPeriod =  27.32 * v * 3600;
       });
 
-    const radiusCtrl = this.folder.add(this.moon, "radius", 1_000_000, 31_855_000)
+    this.folder.add(this.moon, "radius", 1_000_000, 31_855_000)
       .name("Radius")
       .onChange((v: number) => this.moon.setRadius(v));
 
-    const tiltCtrl = this.folder.add(this.moon, "axialTilt", -45, 45)
+    this.folder.add(this.moon, "axialTilt", -45, 45)
       .name("Axial Tilt (°)")
       .onChange(() => {
         this.moon.group.rotation.z = -this.moon.axialTilt * Math.PI / 180;
       });
 
-    let bumpCtrl: any;
     if (this.moon.mesh.material instanceof THREE.MeshPhongMaterial && this.moon.mesh.material.bumpMap) {
-      bumpCtrl = this.folder.add(this.moon.mesh.material, "bumpScale", 0, 5).name("Bump Scale");
+      this.folder.add(this.moon.mesh.material, "bumpScale", 0, 5).name("Bump Scale");
     }
 
     this.folder.add(this.physicsState, "pos").name("Position (m)");
     this.folder.add(this.physicsState, "vel").name("Velocity (m/s)");
     this.folder.add(this.physicsState, "acc").name("Accel (m/s²)");
 
-    const sampleRateCtrl = this.folder.add(this.moon.trail, "sampleRate", 1, 500).step(1).name("Orbit Trail Sample Rate").onChange((value: number) => {
+    this.folder.add(this.moon.trail, "sampleRate", 1, 500).step(1).name("Orbit Trail Sample Rate").onChange((value: number) => {
       this.moon.trail.frameCounter = 0;
       this.moon.trail.sampleRate = value;
     });
 
-    const MaxPointsCtrl = this.folder.add(this.moon.trail, "maxPoints", 0, 5000).step(1).name("Orbit Trail Max Points");
+    this.folder.add(this.moon.trail, "maxPoints", 0, 5000).step(1).name("Orbit Trail Max Points");
 
-    this.folder.add({ reset: () => this.reset(massCtrl, radiusCtrl, rotCtrl, tiltCtrl, bumpCtrl, sampleRateCtrl, MaxPointsCtrl) }, "reset").name("Reset Moon");
+    this.folder.add({ reset: () => this.reset() }, "reset").name("Reset Moon");
   }
 
   public update() {
@@ -75,7 +74,7 @@ export class MoonControls {
     this.folder.controllers.forEach(ctrl => ctrl.updateDisplay());
   }
 
-  public reset(...ctrls: any[]) {
+  public reset() {
     this.moon.mass = this.defaults.mass;
     this.moon.setRadius(this.defaults.radius);
     this.moon.rotationPeriod = this.defaults.rotationPeriod;
