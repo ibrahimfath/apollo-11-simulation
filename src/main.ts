@@ -124,7 +124,7 @@ function animate() {
   bary.update();
   
   scProp.stepWithSubsteps(dt, 30);
-  spacecraft.update();
+  spacecraft.update(dt);
   hohmannTransfer.update(dt);
   
   gui.updateAll();
