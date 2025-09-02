@@ -143,6 +143,11 @@ export class HohmannTransfer {
 
     /** Applies the first burn to the spacecraft */
     private applyFirstBurn() {
+        this.r1 = this.earth.r_m.distanceTo(this.spacecraft.r_m);
+        this.r2 = this.earth.r_m.distanceTo(this.moon.r_m) - this.moon.radius - this.llo;
+        this.semiMajorAxis = (this.r1 + this.r2) / 2;
+        const v1 = this.spacecraft.v_mps.clone().sub(this.earth.v_mps).length();
+        this.deltaV1 = Math.sqrt(this.earthMU * (2 / this.r1 - 1 / this.semiMajorAxis)) - v1;
         this.spacecraft.burnPrograde(this.deltaV1);
         this.phase = 2;
     }
