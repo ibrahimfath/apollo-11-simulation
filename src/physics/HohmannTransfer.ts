@@ -114,11 +114,10 @@ export class HohmannTransfer {
         }
     }
 
-    public off() {
-        this.phase = 0;
-    }
-
-    public on() {
+    public startTheMission() {
+        if (this.phase !== 0) {
+            return;
+        }
         this.phase = 1;
     }
 

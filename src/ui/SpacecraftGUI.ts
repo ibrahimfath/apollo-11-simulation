@@ -154,8 +154,7 @@ export class SpacecraftGUI {
     hohmannFolder.add(this.hohmannState, "transferTime").name("Transfer Time");
     hohmannFolder.add(this.hohmannState, "lowestDistanceToMoon").name("Lowest Distance to Moon");
     hohmannFolder.add(this.hohmannState, "phase").name("Phase");
-    hohmannFolder.add(this.hohmannTransfer, "off").name("Off");
-    hohmannFolder.add(this.hohmannTransfer, "on").name("On");
+    hohmannFolder.add(this.hohmannTransfer, "startTheMission").name("Start the Mission");
     hohmannFolder.add(this.hohmannTransfer, "deltaV1").name("Δv1");
     hohmannFolder.add(this.hohmannTransfer, "deltaV2").name("Δv2");
     hohmannFolder.add(this.hohmannTransfer, "deltaV3").name("Δv3");
