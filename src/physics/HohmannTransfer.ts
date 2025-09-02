@@ -207,7 +207,7 @@ export class HohmannTransfer {
         // Estimate period of the post-capture ellipse and set a min wait to avoid immediate apolune trigger
         const aEll = 0.5 * (rp + raTarget);
         const T = 2 * Math.PI * Math.sqrt(Math.pow(aEll, 3) / this.moonMU);
-        this.minWaitAfterSecond_s = 0.2 * T; // wait ~20% of an orbit before allowing apolune trigger
+        this.minWaitAfterSecond_s = 0.1 * T; // wait ~10% of an orbit before allowing apolune trigger
     }
 
     /** Checks if the third burn (apolune tweak to set periapsis = R_moon + LLO) should be triggered */
