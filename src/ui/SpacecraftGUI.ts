@@ -83,6 +83,8 @@ export class SpacecraftGUI {
     general.add(this.spacecraft, "fuelMass", 0, 200_000).name("Fuel Mass (kg)");
     general.add(this.spacecraft, "radius", 0, 100_000).name("Radius (m)").onChange((value: number) => {
       this.spacecraft.setRadius(value);
+      // this.spacecraft.startBurnEffect(10000); // 10 s as requested
+
     });
 
     // Orbit Trail
@@ -126,6 +128,11 @@ export class SpacecraftGUI {
     // Direction mode selector
     thrust.add(this.spacecraft, "thrustMode", ["prograde", "retrograde", "radial_out", "radial_in", "normal_plus", "normal_minus", "custom"])
       .name("Direction Mode");
+
+      // Burn status (read-only)
+    const burnStatus = { burnActive: false, burnTime: 0 };
+    thrust.add(burnStatus, "burnActive").name("Burn Active").listen();
+    thrust.add(burnStatus, "burnTime").name("Burn Time (s)").listen();
     
     // Optional: allow custom vector if mode = custom
     const customDir = { x: 1, y: 0, z: 0 };
@@ -167,6 +174,10 @@ export class SpacecraftGUI {
     this.gui.add({ reset: () => this.reset() }, "reset").name("Reset Spacecraft");
 
     this.gui.close();
+
+    // keep these bindings for live display
+    // We'll update burnStatus fields in update() below
+    (this as any)._burnStatus = burnStatus;
   }
 
   public update() {
@@ -208,6 +219,12 @@ export class SpacecraftGUI {
     this.atmosphereState.density = rho.toExponential(3);
     this.atmosphereState.aDrag = aDragMag.toExponential(3);
 
+    // Update burn readouts
+    const burnStatus = (this as any)._burnStatus;
+    if (burnStatus) {
+      burnStatus.burnActive = !!this.spacecraft.burnActive;
+      burnStatus.burnTime = +(this.spacecraft.burnTimeRemaining).toFixed(2);
+    }
 
     // Refresh GUI
     this.gui.controllersRecursive().forEach(ctrl => ctrl.updateDisplay());
