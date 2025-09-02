@@ -49,12 +49,6 @@ export class Spacecraft {
 
     this.group = new THREE.Group();
 
-    // const geometry = new THREE.SphereGeometry(scaledRadius, 16, 12);
-    // const material = new THREE.MeshStandardMaterial({ color: props.color ?? 0xff0000 });
-    // this.mesh = new THREE.Mesh(geometry, material);
-    // markForBloom(this.mesh);
-    // this.group.add(this.mesh);
-
     const loader = new GLTFLoader();
 
     loader.load(
@@ -62,7 +56,7 @@ export class Spacecraft {
       (craft) => {
         this.group.add(craft.scene);
         craft.scene.position.set(0, 0, 0);
-        craft.scene.rotateX(90);
+        craft.scene.rotateX(-30);
         craft.scene.scale.set(0.001, 0.001, 0.001); // adjust scale if too big/small
       },
       (xhr) => {
@@ -86,9 +80,9 @@ export class Spacecraft {
   }
 
   setRadius(newRadius: number) {
-    const scaleFactor = newRadius / this.baseRadius;
+    // const scaleFactor = newRadius / this.baseRadius;
     this.radius = newRadius;
-    this.group.scale.setScalar(scaleFactor);
+    // this.group.scale.setScalar(scaleFactor);
   }
 
   /** wet mass: dry + fuel */
