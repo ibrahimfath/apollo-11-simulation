@@ -61,7 +61,7 @@ export class MoonControls {
       this.moon.trail.sampleRate = value;
     });
 
-    this.folder.add(this.moon.trail, "maxPoints", 0, 5000).step(1).name("Orbit Trail Max Points");
+    this.folder.add(this.moon.trail, "maxPoints", 0, 5000000).step(1).name("Orbit Trail Max Points");
 
     this.folder.add({ reset: () => this.reset() }, "reset").name("Reset Moon");
   }

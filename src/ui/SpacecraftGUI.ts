@@ -89,7 +89,7 @@ export class SpacecraftGUI {
 
     // Orbit Trail
     const trail = this.gui.addFolder("Orbit Trail");
-    trail.add(this.spacecraft.trail, "sampleRate", 1, 500)
+    trail.add(this.spacecraft.trail, "sampleRate", 1, 500000)
       .step(1)
       .name("Sample Rate")
       .onChange((value: number) => {
