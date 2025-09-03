@@ -83,7 +83,7 @@ export class SpacecraftGUI {
     general.add(this.spacecraft, "fuelMass", 0, 200_000).name("Fuel Mass (kg)");
     general.add(this.spacecraft, "radius", 0, 100_000).name("Radius (m)").onChange((value: number) => {
       this.spacecraft.setRadius(value);
-      // this.spacecraft.startBurnEffect(10000); // 10 s as requested
+      // this.spacecraft.startBurnEffect(10); // 10 s as requested
 
     });
 

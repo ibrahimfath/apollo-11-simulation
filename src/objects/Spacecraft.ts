@@ -1,11 +1,8 @@
 import * as THREE from "three";
-// import { markForBloom } from "../visualization/bloom";
 import { OrbitTrail } from "../visualization/OrbitTrail";
 import { g0 } from "../physics/constants";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { markForBloom } from "../visualization/bloom";
-import vertexShader from "../visualization/shaders/flame.vert.glsl";
-import fragmentShader from "../visualization/shaders/flame.frag.glsl"; 
+import { BurnEffect } from "../visualization/BurnEffect";
 
 
 export interface SpacecraftProps {
@@ -45,11 +42,12 @@ export class Spacecraft {
   public thrustMode: ThrustMode = "prograde";
 
   // Burn visual effect state
-  private burnMesh: THREE.Mesh | null = null;
   public burnTimeRemaining: number = 0; // seconds
   public burnActive: boolean = false;
   private burnTotalDuration: number = 0;
   private burnTimeAccumulator: number = 0;
+
+  private burn: BurnEffect;
 
   constructor(props: SpacecraftProps) {
     this.scalePerUnit = 1_000_000;
@@ -87,7 +85,12 @@ export class Spacecraft {
     this.engineOn = false;
     this.thrustDirection_world = null; // if null use prograde (v) as default when engineOn
 
-    this.createBurnMesh();
+    // this.createBurnMesh();
+
+    const coneHeight = this.radius * 0.03 || 100; // fallback size
+    const coneRadius = 0.000000000001;
+    this.burn = new BurnEffect({ coneLengthKm: coneHeight, coneRadiusKm: coneRadius, particleCount: 0.02 });
+    this.group.add(this.burn.group);
 
   }
 
@@ -128,9 +131,12 @@ export class Spacecraft {
         this.r_m.z * inv
       )
     ); 
-    // update burn visual (if active)
+
+    // dt = physics dt in seconds
+    const throttle = this.throttle; // 0..1
+    const engineOn = this.engineOn;
+    this.burn.update(throttle, engineOn, (km) => { return (km*1000)/this.scalePerUnit}); // provide conversion
     this.updateBurnEffect(dt);
-    
   }
   
   // --- Impulsive Δv helper (world-frame) ---
@@ -163,7 +169,7 @@ export class Spacecraft {
     this.fuelMass -= dm; // burn the propellant
 
     this.engineOn = true;
-    this.startBurnEffect(1000); // 10 s as requested
+    this.startBurnEffect(1000); // 1000 s as requested
   }
 
   // --- Impulse Burn Helpers ---
@@ -253,95 +259,32 @@ export class Spacecraft {
 
   // ------------------- Burn visual effect -------------------
 
-  /** Create a small cone / flare with a shader material and attach to craft.group */
-  private createBurnMesh() {
-    // Cone that we will orient toward -velocity (i.e. exhaust behind craft)
-    const coneHeight = this.radius * 0.000005 || 100; // fallback size
-    const coneRadius = coneHeight * 0.3;
-    const geom = new THREE.ConeGeometry(coneRadius, coneHeight, 24, 1, true);
-    geom.translate(0, 0.075, 0); // pivot at craft origin
-
-    const mat = new THREE.ShaderMaterial({
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-      uniforms: {
-        uTime: { value: 0 },
-        uProgress: { value: 0 }, // 0..1 progress through burn (1 = end)
-        uIntensity: { value: 1.0 }
-      },
-      vertexShader: vertexShader,
-      fragmentShader: fragmentShader
-    });
-
-    const mesh = new THREE.Mesh(geom, mat);
-    mesh.renderOrder = 999;
-    mesh.frustumCulled = false;
-    mesh.visible = false;
-    // make sure the burn mesh doesn't cast shadows and doesn't interfere
-    mesh.receiveShadow = false;
-    mesh.castShadow = false;
-
-    this.burnMesh = mesh;
-    markForBloom(this.burnMesh);
-    // this.group.add(this.burnMesh);
-    this.burnMesh.name = "Burn";
-  }
-
   /** Start burn visual for duration seconds (will restart if already active) */
   public startBurnEffect(duration: number) {
-    if (!this.burnMesh) return;
+    if (!this.burn) return;
     this.burnTotalDuration = Math.max(0.001, duration);
     this.burnTimeRemaining = this.burnTotalDuration;
     this.burnTimeAccumulator = 0;
     this.burnActive = true;
-    this.burnMesh.visible = true;
-
-    // ensure engine flag as visual hint (will be used by GUI)
-    this.engineOn = true;
-
-    // update immediately orientation so the effect appears behind craft
-    this.updateBurnMeshOrientation();
-    // set initial shader values
-    const mat = this.burnMesh.material as THREE.ShaderMaterial;
-    if (mat.uniforms.uProgress) mat.uniforms.uProgress.value = 0;
-    if (mat.uniforms.uTime) mat.uniforms.uTime.value = 0;
+    this.burn.group.visible = true;
   }
 
   /** Stop burn effect immediately (hide) */
   public stopBurnEffect() {
-    if (!this.burnMesh) return;
+    if (!this.burn) return;
     this.burnActive = false;
     this.burnTimeRemaining = 0;
-    this.burnMesh.visible = false;
+    this.burn.group.visible = false;
     this.burnTimeAccumulator = 0;
     this.engineOn = false;
   }
 
   /** Called every frame to update shader uniforms and countdown timers */
   private updateBurnEffect(dt: number) {
-    if (!this.burnMesh) return;
-    const mat = this.burnMesh.material as THREE.ShaderMaterial;
-
-    // If not active, ensure uniform times decay to zero to avoid ghosts
-    if (!this.burnActive) {
-      if (mat.uniforms.uProgress) mat.uniforms.uProgress.value = 1.0;
-      if (mat.uniforms.uTime) mat.uniforms.uTime.value = 0;
-      return;
-    }
+    if (!this.burn.group.visible) return;
 
     this.burnTimeAccumulator += dt;
     this.burnTimeRemaining = Math.max(0, this.burnTotalDuration - this.burnTimeAccumulator);
-
-    // animate time uniform
-    if (mat.uniforms.uTime) mat.uniforms.uTime.value += dt;
-
-    // progress (0 at start -> 1 at end) so shader can fade
-    const progress = Math.min(1, this.burnTimeAccumulator / this.burnTotalDuration);
-    if (mat.uniforms.uProgress) mat.uniforms.uProgress.value = progress;
-
-    // orient burn mesh to point opposite velocity (i.e., exhaust trails opposite travel)
-    this.updateBurnMeshOrientation();
 
     // when effect finished -> hide & clear
     if (this.burnTimeRemaining <= 0) {
@@ -349,38 +292,5 @@ export class Spacecraft {
     }
   }
 
-  /** Orient burn mesh to point in the opposite direction of velocity or thrustDirection_world.
-   * We position the mesh slightly behind the model origin so it looks like exhaust out the nozzle.
-   */
-  private updateBurnMeshOrientation() {
-    if (!this.burnMesh) return;
-
-    // choose direction: explicit thrustDirection_world if present, else velocity
-    let dir = new THREE.Vector3();
-    if (this.thrustDirection_world && this.thrustDirection_world.lengthSq() > 1e-9) {
-      dir.copy(this.thrustDirection_world).normalize();
-    } else if (this.v_mps.lengthSq() > 1e-9) {
-      dir.copy(this.v_mps).normalize();
-    } else {
-      // fallback: negative Z in model-space
-      dir.set(0, 0, 1);
-    }
-
-    // exhaust should point opposite to the flight direction
-    const exhaustDir = dir.clone().negate();
-
-    // compute quaternion to rotate cone's +Y (cone geometry drawn pointing down Y) to exhaustDir:
-    // our cone points towards -Y because we translated it; we want it to point in exhaustDir
-    const from = new THREE.Vector3(0, -1, 0); // direction cone currently points toward in object space
-    const quat = new THREE.Quaternion().setFromUnitVectors(from, exhaustDir.clone().normalize());
-
-    this.burnMesh.quaternion.copy(quat);
-
-    // place burn mesh a little behind the craft pivot so it doesn't intersect
-    const offsetDistance = Math.max(this.radius * 0.5, 10);
-    const localOffset = exhaustDir.clone().multiplyScalar(offsetDistance / this.scalePerUnit); // careful with visual scale
-    // set position in world-space relative to group origin: group is at craft origin in visual scale, so set position directly
-    this.burnMesh.position.copy(localOffset);
-  }
 
 }
