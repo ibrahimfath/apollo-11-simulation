@@ -1,4 +1,4 @@
-# Apollo 11 Simulation – Earth to Moon Transfer
+# Apollo 11 Simulation
 
 A physics-based **3D orbital mechanics simulator** built with **Three.js** and **TypeScript**, simulating the Apollo 11 spacecraft’s **Trans-Lunar Injection (TLI)** and subsequent maneuvers to reach **Low Lunar Orbit (LLO)**.
 
@@ -22,6 +22,26 @@ This project blends **astrodynamics**, **numerical integration methods**, and **
   - Chase camera views.
   - Engine burn effects with shader-based flames.
   - Velocity-lock mode, camera shakes during burns.
+
+---
+## 🔧 Instructions for Running the Project Locally
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/Zaid-Al-Habbal/apollo-11-simulation
+cd apollo-11-simulation
+```
+
+### 2. Install Node.js on your system
+
+### 3. Install dependencies
+```bash
+npm install
+```
+### 4. Run development Server
+```bash
+npm run dev
+```
 
 ---
 
@@ -141,15 +161,6 @@ This method is **symplectic**, ensuring **energy stability** over long periods �
 
 ---
 
-## 📊 Example Outputs
-
-- Orbital trails for each burn.  
-- Δv values for each phase.  
-- Transfer time formatting: `Xd Yh Zm`.  
-- Tables & plots of distance vs. time.
-
----
-
 ## 🛠️ Tech Stack
 
 - [Three.js](https://threejs.org/) – 3D rendering.
@@ -160,12 +171,19 @@ This method is **symplectic**, ensuring **energy stability** over long periods �
 
 ---
 
-## 🔮 Vision
+## 👨‍💻 Contributors
 
-This project is more than a simulation.  
-It’s a **bridge between physics and imagination**, showing how mathematics guides us from **Earth to the Moon**.  
+- **Zaid Al Habbal** – ([GitHub](https://github.com/Zaid-Al-Habbal))  
+- **Ahmad Selo** - ([GitHub](https://github.com/C0ncatS))
 
-> *From Damascus to the Moon — a vision of science, heritage, and the future.*
+---
+
+
+
+## 🙏 Credits
+- Saturn V 3D model(I removed the first and second stages) from: https://sketchfab.com/3d-models/saturn-v-nasa-7a2c9709ff8144c8b3b18ec84b5e112e
+- Textures from this great website: https://www.solarsystemscope.com/textures/
+- Thanks to Bobby Roe for helping me with the visualizations:  https://github.com/bobbyroe
 
 ---
 
