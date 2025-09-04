@@ -182,6 +182,7 @@ This method is **symplectic**, ensuring **energy stability** over long periods ‚
 
 
 ## üôè Credits
+- **Rami Sabbagh** - Project Supervisor ([GitHub](https://github.com/Rami-Sabbagh/))
 - Saturn V 3D model(I removed the first and second stages) from: https://sketchfab.com/3d-models/saturn-v-nasa-7a2c9709ff8144c8b3b18ec84b5e112e
 - Textures from this great website: https://www.solarsystemscope.com/textures/
 - Thanks to Bobby Roe for helping me with the visualizations:  https://github.com/bobbyroe
