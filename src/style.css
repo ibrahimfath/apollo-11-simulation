@@ -1,96 +1,99 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
+#loader-overlay {
+  position: fixed;
+  inset: 0;
   display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.88), rgba(0,0,0,0.96));
+  z-index: 9999;
+  transition: opacity 0.6s ease, visibility 0.6s;
+  opacity: 1;
+  visibility: visible;
+  color: #00ffcc;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+#loader-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+#loader-content {
   text-align: center;
+  max-width: 520px;
+  width: 100%;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 255, 204, 0.08);
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vanilla:hover {
-  filter: drop-shadow(0 0 2em #3178c6aa);
+#logo { margin-bottom: -102px; filter: drop-shadow(0 0 8px rgba(0,255,204,0.12)); }
+
+#loader-rocket {
+  width: 56px;
+  height: 120px; /* more space for flame */
+  margin: 0 auto 12px;
+  position: relative;
 }
 
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
-
-button {
+.rocket-body {
+  width: 56px;
+  height: 56px;
   border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  background: linear-gradient(180deg, rgba(0,255,204,0.12), rgba(0,255,204,0.06));
+  border: 1.5px solid rgba(0,255,204,0.25);
+  box-shadow: 0 6px 18px rgba(0,255,204,0.06), 0 0 20px rgba(0,255,204,0.06) inset;
+  transform: translateY(0);
+  animation: rocket-bounce 1.5s infinite ease-in-out;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+@keyframes rocket-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
 }
+
+.rocket-flame {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -18px; /* push flame lower */
+  width: 12px;   /* slightly wider */
+  height: 28px;  /* slightly taller */
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff, rgba(0,255,204,1) 35%, rgba(0,255,204,0.2) 60%, transparent 100%);
+  filter: blur(1px);
+  animation: flame-pulse 0.12s infinite ease-in-out;
+  box-shadow: 0 0 22px rgba(0,255,204,0.75);
+}
+
+/* rocket bounce for life */
+@keyframes flame-pulse {
+  0%   { transform: translateX(-50%) scaleY(0.85) translateY(2px); opacity: 0.85; }
+  50%  { transform: translateX(-50%) scaleY(1.15) translateY(-2px); opacity: 1; }
+  100% { transform: translateX(-50%) scaleY(0.85) translateY(2px); opacity: 0.85; }
+}
+
+#loader-text {
+  margin-top: 6px;
+  margin-bottom: 12px;
+  color: #c0fff0;
+  font-size: 14px;
+}
+
+#loader-progress {
+  background: rgba(255,255,255,0.03);
+  height: 10px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 6px 12px 12px;
+}
+
+#loader-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #00ffcc, #66fff0 60%);
+  transition: width 150ms linear;
+  box-shadow: 0 2px 8px rgba(0,255,204,0.12);
+}
+

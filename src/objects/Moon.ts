@@ -5,7 +5,7 @@ import { CelestialBody } from "./CelestialBody";
 export class Moon extends CelestialBody {
   public trail: OrbitTrail;
 
-  constructor() {
+  constructor(loaderManager?: THREE.LoadingManager) {
     super({
       name: "Moon",
       mass: 7.34767309e22,                // kg
@@ -18,7 +18,7 @@ export class Moon extends CelestialBody {
       scalePerUnit: 1_000_000,                   // 1 unit = 1000 km
       textureMap: "/textures/moon/moonmap4k.jpg",
       bumpMap: "/textures/moon/moonbump4k.jpg",
-    });
+    }, loaderManager);
     this.trail = new OrbitTrail(0x837eb0, 50,3000, 0.5);
 
   }

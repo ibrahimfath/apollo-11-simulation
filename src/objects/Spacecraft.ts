@@ -49,7 +49,7 @@ export class Spacecraft {
 
   private burn: BurnEffect;
 
-  constructor(props: SpacecraftProps) {
+  constructor(props: SpacecraftProps, loaderManager?: THREE.LoadingManager) {
     this.scalePerUnit = 1_000_000;
     this.dryMass = props.dryMass ?? 13_000; // kg
     this.fuelMass = props.fuelMass ?? 120_000; // kg
@@ -59,7 +59,7 @@ export class Spacecraft {
 
     this.group = new THREE.Group();
 
-    const loader = new GLTFLoader();
+    const loader = new GLTFLoader(loaderManager);
 
     loader.load(
       "/models/saturn-v-3rd-stage.glb", // path to your model

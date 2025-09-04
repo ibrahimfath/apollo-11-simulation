@@ -39,7 +39,7 @@ export class CelestialBody {
   public v_mps: THREE.Vector3;  // velocity in m/s (world)
   public a_mps2: THREE.Vector3; // acceleration in m/s^2
 
-  constructor(props: CelestialBodyProps) {
+  constructor(props: CelestialBodyProps, loaderManager?: THREE.LoadingManager) {
     this.name = props.name ?? "Unknown";
     this.mass = props.mass ?? 0;
     this.radius = props.radius ?? 1;
@@ -53,7 +53,7 @@ export class CelestialBody {
     this.group = new THREE.Group();
     this.group.rotation.z = -this.axialTilt * Math.PI / 180;
 
-    const loader = new THREE.TextureLoader();
+    const loader = new THREE.TextureLoader(loaderManager);
     const detail = 12;
     const scaledRadius = this.radius / this.scalePerUnit;
 

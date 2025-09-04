@@ -1,7 +1,8 @@
 import * as THREE from "three";
 
-export function createSkybox(path: string, format: string = ".png"): THREE.CubeTexture {
-  const loader = new THREE.CubeTextureLoader();
+export function createSkybox(path: string, loaderManager?: THREE.LoadingManager): THREE.CubeTexture {
+  const loader = new THREE.CubeTextureLoader(loaderManager);
+  let format = ".png";
   const texture = loader.load([
     `${path}px${format}`, // +X
     `${path}nx${format}`, // -X

@@ -1,3 +1,4 @@
+import * as THREE from "three";
 import { Atmosphere } from "./Atmosphere";
 import { CelestialBody } from "./CelestialBody";
 
@@ -5,7 +6,7 @@ export class Earth extends CelestialBody {
 
   public atmosphere: Atmosphere;
 
-  constructor() {
+  constructor(loaderManager?: THREE.LoadingManager) {
     super({
       name: "Earth",
       mass: 5.972e24,                     // kg
@@ -19,7 +20,7 @@ export class Earth extends CelestialBody {
       textureMap: "/textures/earth/8k_earth_daymap.jpg",
       specularMap: "/textures/earth/8k_earth_specular_map.jpg",
       cloudsMap: "/textures/earth/8k_earth_clouds.jpg",
-    });
+    }, loaderManager);
     this.atmosphere = new Atmosphere({geometry: this.geometry});
     this.group.add(this.atmosphere.mesh);
   }
