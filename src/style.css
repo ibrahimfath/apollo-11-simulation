@@ -97,3 +97,7 @@
   box-shadow: 0 2px 8px rgba(0,255,204,0.12);
 }
 
+.lil-gui {
+  --number-color: #00ffcc;
+  --string-color: #239b83;
+}
