@@ -28,7 +28,8 @@
   box-shadow: 0 10px 40px rgba(0, 255, 204, 0.08);
 }
 
-#logo { margin-bottom: -102px; filter: drop-shadow(0 0 8px rgba(0,255,204,0.12)); }
+#logo { margin-bottom: -70px; filter: drop-shadow(0 0 8px rgba(0,255,204,0.12)); transform: translateY(0);
+  animation: rocket-bounce 0.5s infinite ease-in-out; }
 
 #loader-rocket {
   width: 56px;
@@ -37,16 +38,6 @@
   position: relative;
 }
 
-.rocket-body {
-  width: 56px;
-  height: 56px;
-  border-radius: 8px;
-  background: linear-gradient(180deg, rgba(0,255,204,0.12), rgba(0,255,204,0.06));
-  border: 1.5px solid rgba(0,255,204,0.25);
-  box-shadow: 0 6px 18px rgba(0,255,204,0.06), 0 0 20px rgba(0,255,204,0.06) inset;
-  transform: translateY(0);
-  animation: rocket-bounce 1.5s infinite ease-in-out;
-}
 
 @keyframes rocket-bounce {
   0%, 100% { transform: translateY(0); }
@@ -57,9 +48,9 @@
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  bottom: -18px; /* push flame lower */
+  bottom: 58px; /* push flame lower */
   width: 12px;   /* slightly wider */
-  height: 28px;  /* slightly taller */
+  height: 40px;  /* slightly taller */
   border-radius: 50%;
   background: radial-gradient(circle at 30% 30%, #fff, rgba(0,255,204,1) 35%, rgba(0,255,204,0.2) 60%, transparent 100%);
   filter: blur(1px);
